@@ -7,9 +7,9 @@ Menu:
 * 01 Entry
 * 10 Paused
 * 11 Finished
-Minutes/seconds – r28:r29
-LCD time – r27
-<= r26 – anything!
+Minutes/seconds – r27:r28
+LCD time – r26
+< r26 – anything!
 
 Turntable string (in SRAM): -/|``|/-
 

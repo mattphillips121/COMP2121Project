@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Fri Oct 21 14:03:04 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Fri Oct 21 14:16:37 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1359,5 +1359,10 @@ EQU  URXC3addr    0000006c
 EQU  UDRE3addr    0000006e
 EQU  UTXC3addr    00000070
 EQU  INT_VECTORS_SIZE 00000072
+DEF  status       r29
+DEF  minutes      r27
+DEF  seconds      r28
+DEF  LCDtime      r26
+DSEG Turntable    00000200
 CSEG Reset        00000000
 CSEG halt         00000000
