@@ -13,9 +13,27 @@
 .def seconds = r28
 .def LCDtime = r26
 
+.macro clear
+	ldi YL, low(@0)
+	ldi YH, high(@0)
+	clr r16
+	st Y+, r16
+	st Y, r16
+.endmacro
+
 .dseg
 Turntable:
 	.db "-/|``|/-"
+TempCounter:
+	.byte 2
+Timer2Counter:
+	.byte 2
+Timer2Milli:
+	.byte 1
+voltagesSeen0:
+	.byte 1
+voltagesSeen1:
+	.byte 1
 
 .cseg
 
@@ -78,6 +96,75 @@ halt:
 	rjmp halt
 
 timer2Int:
+	lds r24, Timer2Counter
+	lds r25, Timer2Counter + 1
+	adiw r25:r24,1
+	ldi r16, high(100)
+	cpi r24, low(100)
+	cpc r25, r16
+	breq continue_int
+	rjmp not_milli
+continue_int:
+	clear Timer2Counter
+	lds r24, Timer2Milli
+	inc r24
+	in r25, PIND
+	cpi r25, 0xFF
+	brne check_others
+	rjmp neither_button
+check_others:	
+	cpi r25, 0xFE
+	breq push0
+
+	cpi r25, 0xFD
+	breq push1
+	rjmp do_nothing
+push0:
+
+	lds r16, voltagesSeen1
+	lsl r16
+	ori r16, 1
+	sts voltagesSeen1, r16
+
+	
+	lds r16, voltagesSeen0
+	lsl r16
+	sts voltagesSeen0, r16
+
+	cpi r16, 0xFE
+	; Push button 0 is pressed if equal
+	rjmp do_nothing
+
+		
+push1:
+	lds r16, voltagesSeen1
+	lsl r16
+	sts voltagesSeen1, r16
+	lds r25, voltagesSeen0
+	lsl r25
+	ori r25, 1
+	sts voltagesSeen0, r25
+	cpi r16, 0xFE
+	brne do_nothing
+	; Push button 1 has been pressed here
+	rjmp do_nothing
+
+neither_button:
+	
+	lsl r16
+	ori r16, 1
+	sts voltagesSeen0, r16
+	lds r16, voltagesSeen1
+	lsl r16
+	ori r16, 1
+	sts voltagesSeen1, r16
+	
+do_nothing:
+	reti
+
+not_milli:
+	sts Timer2Counter, r24
+	sts Timer2Counter+1, r25
 	reti
 
 timer0Int:

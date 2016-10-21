@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sat Oct 22 00:36:43 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sat Oct 22 01:38:09 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1364,7 +1364,19 @@ DEF  minutes      r27
 DEF  seconds      r28
 DEF  LCDtime      r26
 DSEG Turntable    00000200
+DSEG TempCounter  00000208
+DSEG Timer2Counter 0000020a
+DSEG Timer2Milli  0000020c
+DSEG voltagesSeen0 0000020d
+DSEG voltagesSeen1 0000020e
 CSEG Reset        00000030
 CSEG timer2Int    00000054
-CSEG timer0Int    00000055
+CSEG timer0Int    0000009a
 CSEG halt         00000053
+CSEG continue_int 0000005e
+CSEG not_milli    00000095
+CSEG check_others 0000006a
+CSEG neither_button 0000008a
+CSEG push0        0000006f
+CSEG push1        0000007c
+CSEG do_nothing   00000094
