@@ -1,17 +1,21 @@
 .include "m2560def.inc"
 
-.def status = r29   ; 000 D MM PP 
+.def status = r29   ; 00 O MMM PP 
+;O = Whether or not the door is open
 ;D = Direction of rotation (0 clockwise 1 counterclockwise) 
 ;P = Power (1-3)  
 ;M = Menu 
 ;Menu:
-;* 00 running
-;* 01 Entry
-;* 10 Paused
-;* 11 Finished
+;* 000 running
+;* 001 Entry
+;* 010 Paused
+;* 100 Finished
+;* 111 Door Open
 .def minutes = r27
 .def seconds = r28
 .def LCDtime = r26
+
+
 
 .macro clear
 	ldi YL, low(@0)
@@ -78,7 +82,7 @@ Reset:
 	ser r16
 	out PORTD, r16 ; Pull up resistors
 
-	;Initialise the LEDs for testing
+	;Initialise the LEDs for testing/Power level
 	ser r16
 	out DDRC, r16 ; output
 	clr r16
@@ -137,9 +141,20 @@ push0:
 	sts voltagesSeen0, r16
 
 	cpi r16, 0xFE
-	; Push button 0 is pressed if equal
+	; Push button 0 is pressed if equal (Open door)
+	breq open_door
 	rjmp do_nothing
 
+open_door:
+	mov r16, status
+	ldi r17, 0b00011100 ; Open door mask
+	and r16, r17
+	cpi r16, 28 ; If door is not open
+	breq door_already_open
+	ori status, 0b00011100 ; Set the door to open
+	; Move into open door state
+door_already_open:
+	rjmp do_nothing
 		
 push1:
 	lds r16, voltagesSeen1
@@ -151,7 +166,11 @@ push1:
 	sts voltagesSeen0, r25
 	cpi r16, 0xFE
 	brne do_nothing
-	; Push button 1 has been pressed here
+	; Push button 1 has been pressed here (Close door)
+	; Enter Paused state
+	andi status, 0b11100011 ; Clear the status
+	ori status, 0b00001000 ; Set the status to paused
+	; Set all of the paused state requirements?? 
 	rjmp do_nothing
 
 neither_button:
