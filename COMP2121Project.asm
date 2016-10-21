@@ -93,8 +93,7 @@ Reset:
 	sts TCCR2A, r16
 	ldi r16, 0b00000010
 	sts TCCR2B, r16
-	ldi r16, 1<<TOIE2 ; Interrupt on overflow (is this 255 or whatever a 16bit counter overflows at?)	
-	sts TIMSK2, r16
+	ldi r16, 1<<TOIE2 ; Interrupt on overflow
 
 	sei
 

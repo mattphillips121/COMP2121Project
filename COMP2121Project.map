@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sat Oct 22 02:45:13 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sat Oct 22 03:45:16 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1369,15 +1369,15 @@ DSEG Timer2Milli  0000020a
 DSEG voltagesSeen0 0000020b
 DSEG voltagesSeen1 0000020c
 CSEG Reset        00000030
-CSEG timer2Int    00000054
-CSEG timer0Int    000000a2
-CSEG halt         00000053
-CSEG continue_int 0000005e
-CSEG not_milli    0000009d
-CSEG check_others 0000006a
-CSEG neither_button 00000092
-CSEG push0        0000006f
-CSEG push1        0000007e
-CSEG do_nothing   0000009c
-CSEG open_door    0000007d
-CSEG door_already_closed 00000091
+CSEG timer2Int    00000052
+CSEG timer0Int    000000a0
+CSEG halt         00000051
+CSEG continue_int 0000005c
+CSEG not_milli    0000009b
+CSEG check_others 00000068
+CSEG neither_button 00000090
+CSEG push0        0000006d
+CSEG push1        0000007c
+CSEG do_nothing   0000009a
+CSEG open_door    0000007b
+CSEG door_already_closed 0000008f
