@@ -20,7 +20,9 @@
  </OUTPUT_FILES>
  <LABELS>
   <Turntable><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>17</LINE></Turntable>
-  <Reset><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>22</LINE></Reset>
-  <halt><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>55</LINE></halt>
+  <Reset><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>30</LINE></Reset>
+  <timer2Int><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>80</LINE></timer2Int>
+  <timer0Int><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>83</LINE></timer0Int>
+  <halt><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>77</LINE></halt>
  </LABELS>
 </ASSEMBLER_INFO>

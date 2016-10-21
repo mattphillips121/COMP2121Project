@@ -1,4 +1,4 @@
-Timer1 – Keyboard and push buttons (backlight?)
+Timer2 – Keyboard and push buttons (backlight?)
 Timer0 – Pipeline LCD
 Z(30:31) – Reserved for turntable
 Sreg (000 D MM PP) – r29 : D = Direction of rotation (0 clockwise 1 counterclockwise) P = Power (1-3)  M = Menu 

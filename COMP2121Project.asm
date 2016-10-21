@@ -19,6 +19,14 @@ Turntable:
 
 .cseg
 
+.org 0x0000 ; Reset interrupt
+jmp Reset
+.org 0x001E ; Timer2 overflow
+jmp timer2Int
+.org 0x002E ; Timer0 overflow
+jmp timer0Int
+
+
 Reset:
 
 	; Initialise stack for interrupts
@@ -50,7 +58,27 @@ Reset:
 	ser r16
 	out PORTD, r16 ; Pull up resistors
 
+	;Initialise the LEDs for testing
+	ser r16
+	out DDRC, r16 ; output
+	clr r16
+	out PORTD, r16 ; Turn all off
+
+	;Initialise timer1
+	clr r16
+	sts TCCR2A, r16
+	ldi r16, 0b00000010
+	sts TCCR2B, r16
+	ldi r16, 1<<TOIE2 ; Interrupt on overflow (is this 255 or whatever a 16bit counter overflows at?)	
+	sts TIMSK2, r16
+
 	sei
 
 halt:
 	rjmp halt
+
+timer2Int:
+	reti
+
+timer0Int:
+	reti
