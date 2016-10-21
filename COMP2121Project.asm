@@ -24,16 +24,18 @@
 .dseg
 Turntable:
 	.db "-/|``|/-"
-TempCounter:
-	.byte 2
+
 Timer2Counter:
 	.byte 2
-Timer2Milli:
+
+;--------- START PUSH BUTTON ---------;
+Timer2Milli: ; How many ms have passed for timer 2 interrupt (PB) handling
 	.byte 1
-voltagesSeen0:
+voltagesSeen0: ; The voltages seen from PB0
 	.byte 1
-voltagesSeen1:
+voltagesSeen1: ; The voltages seen from PB1
 	.byte 1
+;--------- END PUSH BUTTON ----------;
 
 .cseg
 
@@ -96,6 +98,9 @@ halt:
 	rjmp halt
 
 timer2Int:
+
+
+;--------------- START Push Buttons ---------------;
 	lds r24, Timer2Counter
 	lds r25, Timer2Counter + 1
 	adiw r25:r24,1
@@ -166,6 +171,8 @@ not_milli:
 	sts Timer2Counter, r24
 	sts Timer2Counter+1, r25
 	reti
+
+;--------------- END Push Buttons ---------------;
 
 timer0Int:
 	reti
