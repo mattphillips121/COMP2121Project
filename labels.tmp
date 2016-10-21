@@ -21,6 +21,6 @@
  <LABELS>
   <Turntable><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>17</LINE></Turntable>
   <Reset><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>22</LINE></Reset>
-  <halt><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>25</LINE></halt>
+  <halt><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>55</LINE></halt>
  </LABELS>
 </ASSEMBLER_INFO>

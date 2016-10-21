@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Fri Oct 21 14:16:37 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Fri Oct 21 14:32:45 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1365,4 +1365,4 @@ DEF  seconds      r28
 DEF  LCDtime      r26
 DSEG Turntable    00000200
 CSEG Reset        00000000
-CSEG halt         00000000
+CSEG halt         00000016
