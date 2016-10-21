@@ -146,15 +146,9 @@ push0:
 	rjmp do_nothing
 
 open_door:
-	mov r16, status
-	ldi r17, 0b00011100 ; Open door mask
-	and r16, r17
-	cpi r16, 28 ; If door is not open
-	breq door_already_open
+	; If door is not open
 	ori status, 0b00011100 ; Set the door to open
 	; Move into open door state
-door_already_open:
-	rjmp do_nothing
 		
 push1:
 	lds r16, voltagesSeen1
@@ -167,10 +161,14 @@ push1:
 	cpi r16, 0xFE
 	brne do_nothing
 	; Push button 1 has been pressed here (Close door)
-	; Enter Paused state
+	mov r16, status
+	ori r16, 0b00011100
+	cpi r16, 28
+	brne door_already_closed
 	andi status, 0b11100011 ; Clear the status
 	ori status, 0b00001000 ; Set the status to paused
 	; Set all of the paused state requirements?? 
+door_already_closed:
 	rjmp do_nothing
 
 neither_button:
