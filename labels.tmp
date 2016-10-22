@@ -37,7 +37,8 @@
   <do_nothing><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>212</LINE></do_nothing>
   <open_door><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>162</LINE></open_door>
   <door_already_closed><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>197</LINE></door_already_closed>
-  <no_pressed><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>234</LINE></no_pressed>
-  <keyRet><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>236</LINE></keyRet>
+  <keypad_continue><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>231</LINE></keypad_continue>
+  <no_pressed><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>240</LINE></no_pressed>
+  <keyRet><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>242</LINE></keyRet>
  </LABELS>
 </ASSEMBLER_INFO>

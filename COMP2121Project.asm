@@ -223,6 +223,12 @@ not_milli:
 timer0Int:
 
 ;--------------- START Keypad --------------;
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0b00011100
+	brne keypad_continue
+	reti
+keypad_continue: 
 	ldi r16, 0b11101111
 	sts PORTL, r16
 	lds r16, PINL

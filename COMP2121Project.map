@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sun Oct 23 04:42:54 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sun Oct 23 04:51:32 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1382,5 +1382,6 @@ CSEG push1        0000007a
 CSEG do_nothing   000000b0
 CSEG open_door    00000088
 CSEG door_already_closed 000000a3
-CSEG no_pressed   000000c0
-CSEG keyRet       000000c1
+CSEG keypad_continue 000000bb
+CSEG no_pressed   000000c5
+CSEG keyRet       000000c6
