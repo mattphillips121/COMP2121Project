@@ -17,11 +17,13 @@
 
 
 .macro clear
+	push YH
 	ldi YL, low(@0)
 	ldi YH, high(@0)
 	clr r16
 	st Y+, r16
 	st Y, r16
+	pop YH
 .endmacro
 
 .dseg
@@ -85,7 +87,7 @@ Reset:
 	ser r16
 	out DDRC, r16 ; output
 	ldi r16, 0b00000011
-	out PORTD, r16 ; Turn Set LEDS to display power level 1
+	out PORTC, r16 ; Turn Set LEDS to display power level 1
 
 	;Initialise timer1
 	clr r16
@@ -93,6 +95,8 @@ Reset:
 	ldi r16, 0b00000010
 	sts TCCR2B, r16
 	ldi r16, 1<<TOIE2 ; Interrupt on overflow
+	sts TIMSK2, r16
+	
 
 	sei
 
@@ -107,16 +111,18 @@ halt:
 timer2Int:
 
 ;--------------- START Push Buttons ---------------;
+	
 	lds r24, Timer2Counter
 	lds r25, Timer2Counter + 1
 	adiw r25:r24,1
-	ldi r16, high(100)
-	cpi r24, low(100)
+	ldi r16, high(300)
+	cpi r24, low(300)
 	cpc r25, r16
 	breq continue_int
 	rjmp not_milli
 continue_int:
 	clear Timer2Counter
+
 	lds r24, Timer2Milli
 	inc r24
 	in r25, PIND
@@ -130,8 +136,7 @@ check_others:
 	cpi r25, 0xFD
 	breq push1
 	rjmp do_nothing
-push0:
-
+push1:
 	lds r16, voltagesSeen1
 	lsl r16
 	ori r16, 1
@@ -148,11 +153,16 @@ push0:
 	rjmp do_nothing
 
 open_door:
+	
 	; If door is not open
 	ori status, 0b00011100 ; Set the door to open
+	;out PORTC, status
+	ldi r16, 1
+	out PORTA, r16
+	rjmp do_nothing
 	; Move into open door state
 		
-push1:
+push0:
 	lds r16, voltagesSeen1
 	lsl r16
 	sts voltagesSeen1, r16
@@ -162,19 +172,28 @@ push1:
 	sts voltagesSeen0, r25
 	cpi r16, 0xFE
 	brne do_nothing
-	; Push button 1 has been pressed here (Close door)
+	; Push button 0 has been pressed here (Close door)
 	mov r16, status
-	ori r16, 0b00011100
+	;out PORTC, r16
+	andi r16, 0b00011100
+	
 	cpi r16, 28
 	brne door_already_closed
+	
 	andi status, 0b11100011 ; Clear the status
 	ori status, 0b00001000 ; Set the status to paused
+	in r16, PORTA
+	andi r16, 0b11111110
+	out PORTA, r16
+	rjmp do_nothing
 	; Set all of the paused state requirements?? 
 door_already_closed:
+	 
+	;out PORTC, r16
 	rjmp do_nothing
 
 neither_button:
-	
+	lds r16, voltagesSeen0
 	lsl r16
 	ori r16, 1
 	sts voltagesSeen0, r16
