@@ -14,7 +14,7 @@
 .def seconds = r28
 .def LCDtime = r26
 
-
+.set keypadMask = 0b11110000
 
 .macro clear
 	push YH
@@ -115,8 +115,8 @@ timer2Int:
 	lds r24, Timer2Counter
 	lds r25, Timer2Counter + 1
 	adiw r25:r24,1
-	ldi r16, high(300)
-	cpi r24, low(300)
+	ldi r16, high(100)
+	cpi r24, low(100)
 	cpc r25, r16
 	breq continue_int
 	rjmp not_milli
@@ -148,7 +148,7 @@ push1:
 	sts voltagesSeen0, r16
 
 	cpi r16, 0xFE
-	; Push button 0 is pressed if equal (Open door)
+	; Push button 1 is pressed if equal (Open door)
 	breq open_door
 	rjmp do_nothing
 
