@@ -1,6 +1,7 @@
 .include "m2560def.inc"
 
-.def status = r29   ; 00 D MMM PP 
+.def status = r29   ; 0 K D MMM PP 
+;K = Keypadpress flag (0 means it is pressed, 1 ready for new press)
 ;D = Direction of rotation (0 clockwise 1 counterclockwise) 
 ;P = Power (1-3)  
 ;M = Menu 
@@ -89,13 +90,19 @@ Reset:
 	ldi r16, 0b00000011
 	out PORTC, r16 ; Turn Set LEDS to display power level 1
 
-	;Initialise timer1
+	;Initialise timer2
 	clr r16
 	sts TCCR2A, r16
 	ldi r16, 0b00000010
 	sts TCCR2B, r16
 	ldi r16, 1<<TOIE2 ; Interrupt on overflow
 	sts TIMSK2, r16
+	
+	;Initialise the keypad as 7-4 output and 3-0 input
+	ldi r16, keypadMask
+	sts DDRL, r16
+	com r16
+	sts PORTL, r16
 	
 
 	sei
@@ -212,5 +219,21 @@ not_milli:
 
 ;--------------- END Push Buttons ---------------;
 
+
 timer0Int:
+
+;--------------- START Keypad --------------;
+	ldi r16, 0b11101111
+	sts PORTL, r16
+	lds r16, PINL
+	andi r16, 0b00001111 ;Mask out the output bits
+	cpi r16, 0b00001111
+	breq no_pressed
+	ori status, 0b01000000
+	rjmp keyRet
+no_pressed:
+	andi status, 0b10111111
+keyRet:
+	out PORTC, status
 	reti
+;--------------- END Keypad ----------------;
