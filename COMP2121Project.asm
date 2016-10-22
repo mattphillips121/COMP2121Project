@@ -1,7 +1,6 @@
 .include "m2560def.inc"
 
-.def status = r29   ; 00 O MMM PP 
-;O = Whether or not the door is open
+.def status = r29   ; 00 D MMM PP 
 ;D = Direction of rotation (0 clockwise 1 counterclockwise) 
 ;P = Power (1-3)  
 ;M = Menu 
@@ -85,8 +84,8 @@ Reset:
 	;Initialise the LEDs for testing/Power level
 	ser r16
 	out DDRC, r16 ; output
-	clr r16
-	out PORTD, r16 ; Turn all off
+	ldi r16, 0b00000011
+	out PORTD, r16 ; Turn Set LEDS to display power level 1
 
 	;Initialise timer1
 	clr r16
@@ -97,11 +96,15 @@ Reset:
 
 	sei
 
+	ldi status, 0b00000101 ; Set to entry moode, power setting 1 and clockwise rotation
+
+	ldi ZH, high(Turntable)
+	ldi ZL, low(Turntable)
+
 halt:
 	rjmp halt
 
 timer2Int:
-
 
 ;--------------- START Push Buttons ---------------;
 	lds r24, Timer2Counter
