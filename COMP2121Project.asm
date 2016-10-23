@@ -387,11 +387,17 @@ interpret_letters:
 	cpi r19, 0;a
 	breq change_powerlvl
 	cpi r19, 1;b
-	breq subtraction
+	breq no_change
+
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0 ; Check in running mode
+	brne no_change
+
 	cpi r19, 2;c
-	breq multiplication
+	breq add_30
 	cpi r19, 3;e (just joking it's d)
-	breq division
+	breq sub_30
 
 change_powerlvl:
 	;Set mode to power lvl change if in entry mode only
@@ -404,16 +410,15 @@ change_powerlvl:
 	;clr input
 no_change:
 	rjmp show
-subtraction:
-	;sub acc, input
-	;clr input
-	rjmp show
-multiplication:
+add_30:
+	cpi seconds, 70
+	brge no_change
+	subi seconds, -30 ; Should it add to minutes?
 	;mul acc, input
 	;mov acc, r0
 	;clr input
 	rjmp show
-division: ;why is division the only operation that ends in 'sion'
+sub_30: ;why is division the only operation that ends in 'sion'
 	;cpi input, 0
 	;breq show
 	;clr temp2
@@ -458,7 +463,8 @@ start_button: ;start_button
 	cpc minutes, r0
 	breq add_one_min
 	rjmp max_time
-add_one_min:
+
+add_one_min: ; Issue with whether or not it should add to seconds?
 	cpi minutes, 99
 	brge max_time
 	inc minutes
@@ -474,8 +480,23 @@ stop_button:
 ; Entry mode - Clear all currently entered time
 ; Running Mode - Enter Pause mode
 ; Pause/Finished Mode - Enter entry mode and clear time etc (reset)		
-	;mov r16, status
-	;andi r16, 0b00011100
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0b00000100 ; Entry mode
+	breq clear_time
+	cpi r16, 0b00000000 ; Running mode
+	breq pause_button
+
+clear_time:
+	out PORTC, status
+	clr seconds
+	clr minutes
+	changeMode 'E'
+	rjmp show
+
+pause_button:
+	changeMode 'P'
+	rjmp show
 
 convert_end:
 	;cpi debounceFlag, 0 ;if the debounceFlag is off then we continue but otherwise we just ignore all inputs

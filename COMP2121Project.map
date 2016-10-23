@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sun Oct 23 14:40:04 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Mon Oct 24 01:51:52 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1397,26 +1397,27 @@ CSEG rowloop      000000e8
 CSEG convert      000000f2
 CSEG dont_stop    000000f7
 CSEG letters      00000116
-CSEG symbols      0000012e
+CSEG symbols      00000134
 CSEG change_power 00000101
 CSEG in_entry_mode 00000103
 CSEG ignore_number 00000115
 CSEG not_power    00000114
-CSEG convert_end  0000014b
+CSEG convert_end  00000160
 CSEG interpret_letters 0000011c
-CSEG change_powerlvl 00000124
-CSEG subtraction  0000012b
-CSEG multiplication 0000012c
-CSEG division     0000012d
-CSEG no_change    0000012a
-CSEG show         0000014b
-CSEG divdone      0000012d
-CSEG interpret_symbols 00000134
-CSEG start_button 0000013a
-CSEG zero         0000014b
-CSEG stop_button  0000014b
-CSEG add_one_min  00000145
-CSEG s_button_does_nothing 0000014a
-CSEG max_time     00000148
-CSEG convert_continue 0000014b
-CSEG screen_end   0000014b
+CSEG change_powerlvl 00000128
+CSEG no_change    0000012e
+CSEG add_30       0000012f
+CSEG sub_30       00000133
+CSEG show         00000160
+CSEG divdone      00000133
+CSEG interpret_symbols 0000013a
+CSEG start_button 00000140
+CSEG zero         00000151
+CSEG stop_button  00000151
+CSEG add_one_min  0000014b
+CSEG s_button_does_nothing 00000150
+CSEG max_time     0000014e
+CSEG clear_time   00000157
+CSEG pause_button 0000015d
+CSEG convert_continue 00000160
+CSEG screen_end   00000160
