@@ -26,7 +26,7 @@
 	ldi YH, high(@0)
 	clr r16
 	st Y+, r16
-	st Y, r16
+	st Y, r16	 
 	pop YH
 .endmacro
 
@@ -47,6 +47,101 @@
 	.endif
 .endmacro
 
+;----------------- LCD Macros ---------------
+.macro mov_lcd_data ;need this for when I want to pass a reference to the lcd
+	mov r16, @0
+	rcall lcd_data
+	rcall lcd_wait
+.endmacro
+.macro do_lcd_command
+	ldi r16, @0
+	rcall lcd_command
+	rcall lcd_wait
+.endmacro
+.macro do_lcd_data
+	ldi r16, @0
+	rcall lcd_data
+	rcall lcd_wait
+.endmacro
+
+.macro bin_to_txt ;normally I'd loop over powers of 10 but I only wanted to use 2 registers so we simply have predefined powers of 10	
+	mov r18, @0 ;im safe to use r18/19 because they're only used for rmask/cmask -- otherwise i'd have to do some stack (or lds/sts) stuff and thats no fun
+	clr r19
+	huns: ;we count the number of hundreds in our number
+		cpi r18, 100
+		brlo hundnext
+		inc r19
+		subi r18, 100
+		rjmp huns
+	hundnext:
+		cpi r19, 1 ;if there's a hundreds digit to be written 
+		brlo tens
+		subi r19, -'0'
+		mov_lcd_data r19
+		ldi r19, 10 ;we do this to signal that a hundreds digit has been written (in the event of the tens digit being 0)
+	tens:
+		cpi r18, 10
+		brlo tensnext
+		inc r19
+		subi r18, 10
+		rjmp tens
+	tensnext:
+		cpi r19, 1  ;if there's a tens digit to be written (even if the tens digit is 0 the character '0' will be written if there was already a hundreds digit)
+		brlo ones	;consider 109 vs 009 (where you would want 9 instead of 009)
+		cpi r19,10
+		brlo tenskip
+		subi r19, 10;meed to -10 if r19 was =>10 because the 10 is just the signal from huns
+		tenskip:
+		subi r19, -'0'
+		mov_lcd_data r19
+		clr r19
+	ones:
+		subi r18, -'0' ;don't need any logic here because we are guaranteed a 1 digit number at this point to print
+		mov_lcd_data r18
+		clr r18
+
+.endmacro
+
+.macro mov_lcd_data_p ;need this for when I want to pass a reference to the lcd
+	mov r16, @0
+	sts LCD_command_var, r16
+	ldi r16, 4
+	sts LCD_timer_var, r16
+	clr r16 ; 0 is data 1 is command
+	sts LCD_type_var, r16
+	;rcall lcd_data
+	;rcall lcd_wait
+.endmacro
+.macro do_lcd_command_p
+	ldi r16, @0
+	sts LCD_command_var, r16
+	ldi r16, 4
+	sts LCD_timer_var, r16
+	ldi r16, 1 ; 0 is data 1 is command
+	sts LCD_type_var, r16
+.endmacro
+.macro do_lcd_data_p
+	ldi r16, @0
+	sts LCD_command_var, r16
+	ldi r16, 4
+	sts LCD_timer_var, r16
+	ldi r16, 0 ; 0 is data 1 is command
+	sts LCD_type_var, r16
+.endmacro
+
+.equ LCD_RS = 7
+.equ LCD_E = 6
+.equ LCD_RW = 5
+.equ LCD_BE = 4
+
+.macro lcd_set
+	sbi PORTA, @0
+.endmacro
+.macro lcd_clr
+	cbi PORTA, @0
+.endmacro
+;--------------- END LCD Macros -------------
+
 .dseg
 Turntable:
 	.db "-/|``|/-"
@@ -63,6 +158,17 @@ voltagesSeen1: ; The voltages seen from PB1
 	.byte 1
 ;--------- END PUSH BUTTON ----------;
 
+;--------- LCD variables ------------
+LCD_command_var:
+	.byte 1
+LCD_timer_var:
+	.byte 1
+LCD_type_var:
+	.byte 1
+
+LCD_array:
+	.byte 80
+;--------- END LCD variables --------
 .cseg
 
 .org 0x0000 ; Reset interrupt
@@ -124,6 +230,18 @@ Reset:
 	ser r16
 	sts PORTL, r16
 	clr colnum
+
+	do_lcd_command 0b00111000 ; 2x5x7
+	rcall sleep_5ms
+	do_lcd_command 0b00111000 ; 2x5x7
+	rcall sleep_1ms
+	do_lcd_command 0b00111000 ; 2x5x7
+	do_lcd_command 0b00111000 ; 2x5x7
+	do_lcd_command 0b00001000 ; display off?
+	do_lcd_command 0b00000001 ; clear display
+	do_lcd_command 0b00000110 ; increment, no display shift
+	do_lcd_command 0b00001110 ; Cursor on, bar, no blink
+	do_lcd_data 'D'
 	
 
 	sei
@@ -133,12 +251,19 @@ Reset:
 	ldi ZH, high(Turntable)
 	ldi ZL, low(Turntable)
 
+	clr seconds
+	clr minutes
+
+	do_lcd_data_p 'F'
+
 halt:
 	rjmp halt
 
 timer2Int:
 
-;--------------- START Push Buttons ---------------;
+
+
+
 	push r25
 	lds r24, Timer2Counter
 	lds r25, Timer2Counter + 1
@@ -153,6 +278,77 @@ continue_int:
 
 	lds r24, Timer2Milli
 	inc r24
+;--------------- START LCD pipeline ---------------;
+	lds r16, LCD_timer_var
+	lds r18, LCD_type_var
+	cpi r18, 2
+	breq waiting_start
+	cpi r16, 0
+	breq push_button_continue
+	cpi r16, 4
+	brne command_executed
+	lds r17, LCD_command_var
+	out PORTF, r17
+	cpi r18, 1
+	breq command_end
+	lcd_set LCD_RS
+	rjmp command_end
+command_executed:
+	cpi r16, 3
+	brne lcdE_set
+	lcd_set LCD_E
+	rjmp command_end
+lcdE_set:
+	lcd_clr LCD_E
+	cpi r16, 1
+	brne command_end
+	inc r16
+	sts LCD_timer_var,r16
+	ldi r18, 2
+	sts LCD_type_var, r18
+    clr r17
+	out DDRF, r17
+	out PORTF, r17
+	lcd_set LCD_RW
+	cpi r18, 1
+	breq push_button_continue
+	lcd_clr LCD_RS
+	rjmp push_button_continue
+command_end:
+	dec r16
+	sts LCD_timer_var, r16
+	
+waiting_start:
+	cpi r16, 2
+	breq mili_wait2
+	cpi r16,1
+	breq mili_wait1
+	in r17, PINF
+	lcd_clr LCD_E
+	sbrc r17, 7
+	rjmp reset_timer
+	lcd_clr LCD_RW
+	ser r17
+	out DDRF, r17 
+	; Move the queue forward one here
+	; If it is empty, clr the timer
+	; If it is not empty, set the timer to 4 again
+	rjmp push_button_continue
+mili_wait2:
+	lcd_set LCD_E
+	rjmp timer_decrement_wait
+mili_wait1:
+	lcd_clr LCD_E
+timer_decrement_wait:
+	dec r16
+	sts LCD_timer_var, r16
+	rjmp push_button_continue
+reset_timer:		
+	ldi r16,2
+	sts LCD_timer_var, r16
+;--------------- END LCD pipeline -----------------;
+;--------------- START Push Buttons ---------------;
+push_button_continue:
 	in r25, PIND
 	cpi r25, 0xFF
 	brne check_others
@@ -370,10 +566,10 @@ in_entry_mode:
 	brge ignore_number
 	andi status, 0b11111100
 	or status, r17 ;Set the power level in the status reg
-	out PORTC, status ;Debug display on leds
+	;out PORTC, status ;Debug display on leds
 	rjmp ignore_number
 not_power:
-	out PORTC, r17 ;Debug display on leds
+	;out PORTC, r17 ;Debug display on leds
 ignore_number:	
 	rjmp convert_end
 
@@ -488,7 +684,7 @@ stop_button:
 	breq pause_button
 
 clear_time:
-	out PORTC, status
+	;out PORTC, status
 	clr seconds
 	clr minutes
 	changeMode 'E'
@@ -503,16 +699,31 @@ convert_end:
 	;breq convert_continue
 	;rjmp screen_end ;screen_end is too far away for a breq jump
 convert_continue:
-	;out PORTC, temp1
-	;cpi input, 1 ;if input is 0 then we just add temp1 to it
-	;brge addtens
-	;add input, temp1
-	;rjmp show
-	;addtens:			;else we add 10*temp1 to it (since now we're going from 1 digit to 2 digit number)
-	;ldi temp2, 10
-	;mul input, temp2
-	;mov input, temp1
-	;add input, r0
+	;out PORTC, r17
+	cpi seconds, 1 ;if input is 0 then we just add temp1 to it
+	brge addtens
+	add seconds, r17
+	rjmp show
+	addtens:
+	cpi seconds, 10
+	brge addmins			;else we add 10*temp1 to it (since now we're going from 1 digit to 2 digit number)
+	ldi r18, 10
+	mul seconds, r18
+	mov seconds, r17
+	add seconds, r0
+	add seconds, r17
+	addmins:
+	cpi minutes, 1
+	brge addtenmins
+	add minutes, r17
+	addtenmins:
+	ldi r18,10
+	mul minutes, r18
+	mov minutes, r17 
+	add minutes, r0
+	add minutes, r17
+
+
 
 show:
 
@@ -527,7 +738,82 @@ show:
 	;rcall sleep_5ms ;5ms of good luck
 	;ldi debounceFlag, 1	;because we have received input we now set r24 to 0
 	;andi status, 0b10111111
+	out PORTC, seconds
 screen_end:
 	reti
 
 ;--------------- END Keypad ----------------;
+
+;---------------lcd subroutines used for timing during lcd commands (aka shit I didn't write) ------------------
+
+
+
+
+;
+; Send a command to the LCD (r16)
+;
+
+lcd_command:
+	out PORTF, r16
+	rcall sleep_1ms
+	lcd_set LCD_E
+	rcall sleep_1ms
+	lcd_clr LCD_E
+	rcall sleep_1ms
+	ret
+
+lcd_data:
+	out PORTF, r16
+	lcd_set LCD_RS
+	rcall sleep_1ms
+	lcd_set LCD_E
+	rcall sleep_1ms
+	lcd_clr LCD_E
+	rcall sleep_1ms
+	lcd_clr LCD_RS
+	ret
+
+lcd_wait:
+	push r16
+	clr r16
+	out DDRF, r16
+	out PORTF, r16
+	lcd_set LCD_RW
+lcd_wait_loop:
+	rcall sleep_1ms
+	lcd_set LCD_E
+	rcall sleep_1ms
+	in r16, PINF
+	lcd_clr LCD_E
+	sbrc r16, 7
+	rjmp lcd_wait_loop
+	lcd_clr LCD_RW
+	ser r16
+	out DDRF, r16
+	pop r16
+	ret
+
+.equ F_CPU = 16000000
+.equ DELAY_1MS = F_CPU / 4 / 1000 - 4
+; 4 cycles per iteration - setup/call-return overhead
+
+sleep_1ms:
+	push r24
+	push r25
+	ldi r25, high(DELAY_1MS)
+	ldi r24, low(DELAY_1MS)
+delayloop_1ms:
+	sbiw r25:r24, 1
+	brne delayloop_1ms
+	pop r25
+	pop r24
+	ret
+
+sleep_5ms:
+	rcall sleep_1ms
+	rcall sleep_1ms
+	rcall sleep_1ms
+	rcall sleep_1ms
+	rcall sleep_1ms
+	ret
+
