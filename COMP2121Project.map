@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sun Oct 23 11:09:31 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sun Oct 23 12:08:27 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1391,16 +1391,18 @@ CSEG nextcol      000000df
 CSEG rowloop      000000d7
 CSEG convert      000000e1
 CSEG dont_stop    000000e6
-CSEG letters      000000f2
-CSEG symbols      000000fe
-CSEG convert_end  000000ff
-CSEG addition     000000fa
-CSEG subtraction  000000fb
-CSEG multiplication 000000fc
-CSEG division     000000fd
-CSEG show         000000ff
-CSEG divdone      000000fd
-CSEG star         000000fe
-CSEG zero         000000ff
-CSEG convert_continue 000000ff
-CSEG screen_end   000000ff
+CSEG letters      000000fc
+CSEG symbols      00000109
+CSEG not_power    000000fb
+CSEG ignore_number 000000fb
+CSEG convert_end  0000010a
+CSEG change_powerlvl 00000104
+CSEG subtraction  00000106
+CSEG multiplication 00000107
+CSEG division     00000108
+CSEG show         0000010a
+CSEG divdone      00000108
+CSEG star         00000109
+CSEG zero         0000010a
+CSEG convert_continue 0000010a
+CSEG screen_end   0000010a

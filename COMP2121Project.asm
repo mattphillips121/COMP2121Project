@@ -1,6 +1,7 @@
 .include "m2560def.inc"
 
-.def status = r29   ; 0 K D MMM PP 
+.def status = r29   ; E K D MMM PP 
+;E = Power level entry mode 
 ;K = Keypadpress flag (0 means it is pressed, 1 ready for new press)
 ;D = Direction of rotation (0 clockwise 1 counterclockwise) 
 ;P = Power (1-3)  
@@ -305,11 +306,24 @@ dont_stop:
 	add r17, colnum
 	subi r17, -1
 	out PORTC, r17
+	mov r16, status
+	andi r16, 0b10000000
+	cpi r16, 0
+	breq not_power
+	andi status, 0b01111111
+	cpi r17, 4
+	brge ignore_number
+	andi status, 0b11111100
+	or status, r17
+	out PORTC, status
+not_power:
+
+ignore_number:	
 	rjmp convert_end
 
 letters:
 	cpi r19, 0;a
-	breq addition
+	breq change_powerlvl
 	cpi r19, 1;b
 	breq subtraction
 	cpi r19, 2;c
@@ -317,7 +331,8 @@ letters:
 	cpi r19, 3;e (just joking it's d)
 	breq division
 
-addition:
+change_powerlvl:
+	ori status, 0b10000000
 	;add acc, input
 	;clr input
 	rjmp show
