@@ -1,7 +1,7 @@
 .include "m2560def.inc"
 
-.def status = r29   ; E K D MMM PP 
-;E = Power level entry mode 
+.def status = r29   ; O K D MMM PP 
+;O = old flag (1 if door was opened in entry mode)
 ;K = Keypadpress flag (0 means it is pressed, 1 ready for new press)
 ;D = Direction of rotation (0 clockwise 1 counterclockwise) 
 ;P = Power (1-3)  
@@ -11,6 +11,7 @@
 ;* 001 Entry
 ;* 010 Paused
 ;* 100 Finished
+;* 110 Power Entry
 ;* 111 Door Open
 .def minutes = r27
 .def seconds = r28
@@ -163,10 +164,22 @@ push1:
 	rjmp do_nothing
 
 open_door:
-	
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0 ;If door was opened in running mode
+	breq opened_when_running ; 
+	cpi r16, 0b00001000 ;If door was opened in paused mode
+	breq opened_when_running
+	rjmp opened_in_entry ; Works for finished as well
 	; If door is not open
+
+opened_when_running:
 	ori status, 0b00011100 ; Set the door to open
 	;out PORTC, status
+	rjmp set_led
+opened_in_entry:
+	ori status, 0b10011100
+set_led:
 	ldi r16, 1
 	out PORTA, r16
 	rjmp do_nothing
@@ -190,8 +203,17 @@ push0:
 	cpi r16, 28
 	brne door_already_closed
 	
-	andi status, 0b11100011 ; Clear the status
+	andi status, 0b11100011
+	mov r16, status
+	andi r16, 0b10000000
+	cpi r16, 0
+	brne to_entry_mode
+	 ; Clear the status
 	ori status, 0b00001000 ; Set the status to paused
+	rjmp turn_off_door_led
+to_entry_mode:
+	ori status, 0b00000100 ; Set the status to entry mode
+turn_off_door_led:
 	in r16, PORTA
 	andi r16, 0b11111110
 	out PORTA, r16
@@ -300,6 +322,17 @@ dont_stop:
 	cpi r19, 3
 	breq symbols
 
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0b00000100
+	brne change_power
+	rjmp in_entry_mode
+
+change_power:
+	cpi r16, 0b00011000
+	brne ignore_number
+
+in_entry_mode:
 	mov r17, r19
 	lsl r17
 	add r17, r19
