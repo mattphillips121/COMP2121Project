@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sun Oct 23 04:51:32 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Sun Oct 23 11:09:31 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1363,6 +1363,7 @@ DEF  status       r29
 DEF  minutes      r27
 DEF  seconds      r28
 DEF  LCDtime      r26
+DEF  colnum       r25
 SET  keypadMask   000000f0
 DSEG Turntable    00000200
 DSEG Timer2Counter 00000208
@@ -1370,18 +1371,36 @@ DSEG Timer2Milli  0000020a
 DSEG voltagesSeen0 0000020b
 DSEG voltagesSeen1 0000020c
 CSEG Reset        00000030
-CSEG timer2Int    0000005d
-CSEG timer0Int    000000b6
-CSEG halt         0000005c
-CSEG continue_int 00000067
-CSEG not_milli    000000b1
-CSEG check_others 00000075
-CSEG neither_button 000000a4
-CSEG push0        0000008c
-CSEG push1        0000007a
-CSEG do_nothing   000000b0
-CSEG open_door    00000088
-CSEG door_already_closed 000000a3
-CSEG keypad_continue 000000bb
-CSEG no_pressed   000000c5
-CSEG keyRet       000000c6
+CSEG timer2Int    0000005e
+CSEG timer0Int    000000ba
+CSEG halt         0000005d
+CSEG continue_int 00000069
+CSEG not_milli    000000b4
+CSEG check_others 00000077
+CSEG neither_button 000000a6
+CSEG push0        0000008e
+CSEG push1        0000007c
+CSEG do_nothing   000000b2
+CSEG open_door    0000008a
+CSEG door_already_closed 000000a5
+CSEG keypad_continue 000000bf
+CSEG setcolmask   000000c1
+CSEG colloop      000000c7
+CSEG collnext     000000cc
+CSEG nextcol      000000df
+CSEG rowloop      000000d7
+CSEG convert      000000e1
+CSEG dont_stop    000000e6
+CSEG letters      000000f2
+CSEG symbols      000000fe
+CSEG convert_end  000000ff
+CSEG addition     000000fa
+CSEG subtraction  000000fb
+CSEG multiplication 000000fc
+CSEG division     000000fd
+CSEG show         000000ff
+CSEG divdone      000000fd
+CSEG star         000000fe
+CSEG zero         000000ff
+CSEG convert_continue 000000ff
+CSEG screen_end   000000ff
