@@ -30,6 +30,23 @@
 	pop YH
 .endmacro
 
+.macro changeMode
+	andi status, 0b11100011
+	.if @0 == 'E'
+	ori status, 0b00000100
+	.elif @0 == 'P'
+	ori status, 0b00001000
+	.elif @0 == 'F'
+	ori status, 0b00010000
+	.elif @0 == 'R'
+	ori status, 0b00000000
+	.elif @0 == 'D'
+	ori status, 0b00011100
+	.elif @0 == 'X'
+	ori status, 0b00011000
+	.endif
+.endmacro
+
 .dseg
 Turntable:
 	.db "-/|``|/-"
@@ -212,6 +229,7 @@ push0:
 	ori status, 0b00001000 ; Set the status to paused
 	rjmp turn_off_door_led
 to_entry_mode:
+	andi status, 0b01111111
 	ori status, 0b00000100 ; Set the status to entry mode
 turn_off_door_led:
 	in r16, PORTA
@@ -251,17 +269,17 @@ timer0Int:
 
 ;--------------- START Keypad --------------;
 	;out PORTC, colnum
-	mov r16, status
+	mov r16, status ; Check to see whether to door is open
 	andi r16, 0b00011100
 	cpi r16, 0b00011100
 	brne keypad_continue
-	reti
+	reti ; Handle no input if it is open
 
 keypad_continue:
 	;ldi colnum, 0
-	ldi r17, 0b11101111
+	ldi r17, 0b11101111 ;Load the column mask
 	mov r16, colnum
-setcolmask:
+setcolmask: ;Loop to position the column mask. Depends on colnum
 	cpi r16, 0
 	breq colloop
 	lsl r17
@@ -274,28 +292,30 @@ colloop:
 	cpi colnum, 4 ;
 	brne collnext ;If all keys are not scanned yet, keep scanning!
 	andi status, 0b10111111 ;turn off debounceFlag if no keys are currently pressed
+	; Debouncing is still suss I think?
 	clr colnum
 	reti
 collnext:
-	sts PORTL, r17; 
-	;out PORTC, r17
+	sts PORTL, r17 ;Write the coolumn mask to keypad port
+	;Wait for change to be made
+	nop
 	nop
 	nop
 	lds r17, PINL ; read Port L (r17 is temp1)
 	andi r17, 0b00001111 ; Get the input value 
 	cpi r17, 0b00001111 ; Check if any row is low
-	breq nextcol
+	breq nextcol ;If no button pressed, move to next
 	ldi r18, 0b00000001 ; initialise for row check
 	clr r19 ; clear the row number
 
 rowloop:
 	cpi r19, 4
 	breq nextcol ; The row scan is over
-	mov r20, r17 ; r20 is temp2
+	mov r20, r17 ; r20 is temp2, copy the input from keypad
 	and r20, r18 ; Check unmasked bit
 	breq convert ; If bit is clear, the key is pressed
 	inc r19
-	lsl r18
+	lsl r18 ;Update the row mask to scan along
 	rjmp rowloop
 
 nextcol:
@@ -317,44 +337,53 @@ dont_stop:
 	ori status, 0b01000000 
 	;out PORTC, colnum
 	cpi colnum, 3
-	breq letters
+	breq letters ;Handle the letters 
 
 	cpi r19, 3
-	breq symbols
+	breq symbols ;Handle the bottom symbols
 
 	mov r16, status
-	andi r16, 0b00011100
-	cpi r16, 0b00000100
-	brne change_power
+	andi r16, 0b00011100 
+	cpi r16, 0b00000100 ;Check if it is in entry mode
+	brne change_power ;If not, check if it is in change power mode
 	rjmp in_entry_mode
 
 change_power:
 	cpi r16, 0b00011000
-	brne ignore_number
+	brne ignore_number ;If it is in neither change power or entry, ignore the press
 
 in_entry_mode:
+	;Algorithm to get num from keypad position
 	mov r17, r19
 	lsl r17
 	add r17, r19
 	add r17, colnum
 	subi r17, -1
-	out PORTC, r17
+	;End Algorithm
+	
 	mov r16, status
-	andi r16, 0b10000000
-	cpi r16, 0
-	breq not_power
-	andi status, 0b01111111
-	cpi r17, 4
+	andi r16, 0b00011000
+	cpi r16, 0b00011000 ;Check whether it was in power change mode
+	brne not_power
+	changeMode 'E' ;Set it back to entry
+	cpi r17, 4 ;If the number is greater than 3 ignore it
 	brge ignore_number
 	andi status, 0b11111100
-	or status, r17
-	out PORTC, status
+	or status, r17 ;Set the power level in the status reg
+	out PORTC, status ;Debug display on leds
+	rjmp ignore_number
 not_power:
-
+	out PORTC, r17 ;Debug display on leds
 ignore_number:	
 	rjmp convert_end
 
 letters:
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0b00011000
+	brne interpret_letters
+	changeMode 'E'
+interpret_letters:
 	cpi r19, 0;a
 	breq change_powerlvl
 	cpi r19, 1;b
@@ -365,9 +394,15 @@ letters:
 	breq division
 
 change_powerlvl:
-	ori status, 0b10000000
+	;Set mode to power lvl change if in entry mode only
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0b00000100
+	brne no_change
+	changeMode 'X'
 	;add acc, input
 	;clr input
+no_change:
 	rjmp show
 subtraction:
 	;sub acc, input
@@ -394,28 +429,53 @@ divdone:
 	rjmp show
 
 symbols:
-	;ldi temp1, 0
-	;cpi col, 0 ; Check if we have a star
-	;breq star
-	;cpi col, 1 ; or if we have zero
-	;breq zero
-	;jmp convert_end
-star: ;star empties accumulator and clears out bottom line
-	;clr input 
-	;clr acc 
-
-	;do_lcd_command 0b00000001 ; clear display	
-	;do_lcd_command 0x80  	; cursor on top line
-	;do_lcd_data '0' ;show accumulator is empty
-
-	;rcall sleep_5ms ;this is here because it is good luck
-	;ldi debounceFlag, 1	;because we have received input we now set r24 to 0
-
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0b00011000
+	brne interpret_symbols
+	changeMode 'E'
+interpret_symbols:
+	ldi r16, 0
+	cpi colnum, 0 ; Check if we have a star
+	breq start_button
+	cpi colnum, 1 ; or if we have zero
+	breq zero
+	brne stop_button
+start_button: ;start_button 
+; Entry Mode  - Change to running mode
+;	Run the time entered. If no time entered, run for 1 min
+; Running Mode - Add 1 min
+; Pause Mode - Resume running
+	mov r16, status
+	andi r16, 0b00011100 ;Mask to get the current operating mode
+	cpi r16, 0 ;Check if in running mode
+	breq add_one_min
+	cpi r16, 0b00010000 ;Check if in finished mode
+	breq s_button_does_nothing
+	;Otherwise, in entry mode and handle that
+	clr r0
+	cpi seconds, 0
+	cpc minutes, r0
+	breq add_one_min
+	rjmp max_time
+add_one_min:
+	cpi minutes, 99
+	brge max_time
+	inc minutes
+max_time:
+	changeMode 'R' ;Set the status to running mode
+	
+s_button_does_nothing:
 	;jmp screen_end ;we would rjmp to 'show' but the spec requires an empty bottom line which show can't do (since it would display 0 instead), so we just do it here
 	rjmp show
 zero: ;very exciting
 	;ldi temp1, 0
-	
+stop_button:
+; Entry mode - Clear all currently entered time
+; Running Mode - Enter Pause mode
+; Pause/Finished Mode - Enter entry mode and clear time etc (reset)		
+	;mov r16, status
+	;andi r16, 0b00011100
 
 convert_end:
 	;cpi debounceFlag, 0 ;if the debounceFlag is off then we continue but otherwise we just ignore all inputs
