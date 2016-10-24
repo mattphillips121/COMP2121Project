@@ -326,7 +326,42 @@ Reset:
 	ldi r16, 0b00000011
 	out PORTC, r16 ; Turn Set LEDS to display power level 1
 
-	;Initialise timer2
+
+	
+
+	
+	;Initialise the keypad as 7-4 output and 3-0 input
+	ldi r16, keypadMask
+	sts DDRL, r16
+	ser r16
+	sts PORTL, r16
+	clr colnum
+
+	clr r16
+	sts LCD_timer_var, r16
+
+	do_lcd_command 0b00111000 ; 2x5x7
+	rcall sleep_5ms
+	do_lcd_command 0b00111000 ; 2x5x7
+	rcall sleep_1ms
+	do_lcd_command 0b00111000 ; 2x5x7
+	do_lcd_command 0b00111000 ; 2x5x7
+	do_lcd_command 0b00001000 ; display off?
+	do_lcd_command 0b00000001 ; clear display
+	do_lcd_command 0b00000110 ; increment, no display shift
+	do_lcd_command 0b00001110 ; Cursor on, bar, no blink
+	do_lcd_data 'A'
+
+	ldi XH, high(LCD_array)
+	ldi XL, low(LCD_array)
+	sts array_end, XL
+	sts array_end+1, XH
+
+	do_lcd_data_a 'T'
+	;do_lcd_data_a 'H'
+	do_lcd_data 'p'
+
+		;Initialise timer2
 	clr r16
 	sts TCCR2A, r16
 	ldi r16, 0b00000010
@@ -345,27 +380,6 @@ Reset:
 	sts num_overflow_int, r16
 	ldi r16, 8
 	sts num_needed, r16
-	
-
-	
-	;Initialise the keypad as 7-4 output and 3-0 input
-	ldi r16, keypadMask
-	sts DDRL, r16
-	ser r16
-	sts PORTL, r16
-	clr colnum
-
-	do_lcd_command 0b00111000 ; 2x5x7
-	rcall sleep_5ms
-	do_lcd_command 0b00111000 ; 2x5x7
-	rcall sleep_1ms
-	do_lcd_command 0b00111000 ; 2x5x7
-	do_lcd_command 0b00111000 ; 2x5x7
-	do_lcd_command 0b00001000 ; display off?
-	do_lcd_command 0b00000001 ; clear display
-	do_lcd_command 0b00000110 ; increment, no display shift
-	do_lcd_command 0b00001110 ; Cursor on, bar, no blink
-	do_lcd_data 'D'
 	
 	
 	sei
@@ -390,8 +404,8 @@ timer2Int:
 	lds r24, Timer2Counter
 	lds r25, Timer2Counter + 1
 	adiw r25:r24,1
-	ldi r16, high(100)
-	cpi r24, low(100)
+	ldi r16, high(500)
+	cpi r24, low(500)
 	cpc r25, r16
 	breq continue_int
 	rjmp not_milli
@@ -404,7 +418,44 @@ continue_int:
 	inc r24
 ;--------------- START LCD pipeline ---------------;
 	lds r16, LCD_timer_var
-	lds r18, LCD_type_var
+	;out PORTC, r16
+	;ori r16, 0b00110000
+	;rcall lcd_data
+	;rcall lcd_wait
+	;andi r16, 0b00001111
+	cpi r16, 0
+	breq check_queue
+	rjmp handle_array
+check_queue:
+	push YH
+	push YL
+	push XH
+	push XL
+	push ZH
+	push ZL
+	
+	lds YL, low(LCD_array)
+	lds YH, high(LCD_array)
+	lds XH, high(array_end)
+	lds XL, low(array_end)
+	ld ZL, x+
+	ld ZH, x
+	cp YL, ZL
+	cpc YH, ZH
+	pop ZL
+	pop ZH
+	pop XL
+	pop XH
+	pop YL
+	pop YH
+	brne array_not_empty
+	rjmp push_button_continue
+array_not_empty:
+	ldi r16, 4
+	out PORTC, r16
+	sts LCD_timer_var, r16
+handle_array:
+	lds r18, LCD_array + 1 ;Need to load from array instead of variable (type)
 	cpi r18, 2
 	breq waiting_start
 	cpi r16, 0
@@ -413,8 +464,17 @@ continue_int:
 continue_checking_lcd:
 	cpi r16, 4
 	brne command_executed
-	lds r17, LCD_command_var
+	lds r17, LCD_array
+	;ldi r16, 0b01010100
+	
+	push r16
+	clr r16
+	out PORTC, r16
+	mov r16, r17
+	rcall lcd_data
+	rcall lcd_wait
 	out PORTF, r17
+	pop r16
 	cpi r18, 1
 	breq command_end
 	lcd_set LCD_RS
@@ -445,7 +505,7 @@ skip_jump_to_push_button:
 command_end:
 	dec r16
 	sts LCD_timer_var, r16
-
+	rjmp push_button_continue
 		
 
 
