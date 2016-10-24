@@ -102,31 +102,124 @@
 
 .endmacro
 
-.macro mov_lcd_data_p ;need this for when I want to pass a reference to the lcd
+.macro mov_lcd_data_a ;need this for when I want to pass a reference to the lcd
+	push YH
+	push YL
+	push XH
+	push XL
 	mov r16, @0
-	sts LCD_command_var, r16
-	ldi r16, 4
-	sts LCD_timer_var, r16
-	clr r16 ; 0 is data 1 is command
-	sts LCD_type_var, r16
-	;rcall lcd_data
-	;rcall lcd_wait
+
+	lds YH, high(array_end)
+	lds YL, low(array_end)
+	ld XL, y+
+	ld XH, y
+	
+	clr r0
+	st x+, r16
+	st x, r0
+
+	st y+, XL
+	st y, XH
+
+	pop XL
+	pop XH
+	pop YL
+	pop YH	
 .endmacro
-.macro do_lcd_command_p
+.macro do_lcd_command_a
+	push YH
+	push YL
+	push XH
+	push XL
 	ldi r16, @0
-	sts LCD_command_var, r16
-	ldi r16, 4
-	sts LCD_timer_var, r16
-	ldi r16, 1 ; 0 is data 1 is command
-	sts LCD_type_var, r16
+
+	lds YH, high(array_end)
+	lds YL, low(array_end)
+	ld XL, y+
+	ld XH, y
+	
+	st x+, r16
+	ldi r16, 1
+	st x, r16
+
+	st y+, XL
+	st y, XH
+
+	pop XL
+	pop XH
+	pop YL
+	pop YH	
 .endmacro
-.macro do_lcd_data_p
+.macro do_lcd_data_a
+	push YH
+	push YL
+	push XH
+	push XL
 	ldi r16, @0
-	sts LCD_command_var, r16
-	ldi r16, 4
-	sts LCD_timer_var, r16
-	ldi r16, 0 ; 0 is data 1 is command
-	sts LCD_type_var, r16
+
+	lds YH, high(array_end)
+	lds YL, low(array_end)
+	ld XL, y+
+	ld XH, y
+	
+	st x+, r16
+	ldi r16, 0
+	st x, r16
+
+	st y+, XL
+	st y, XH
+
+	pop XL
+	pop XH
+	pop YL
+	pop YH	
+.endmacro
+.macro queue_pop ;@0 is the start of the array 
+	push YH
+	push YL
+	push XH
+	push XL
+	push ZH
+	push ZL
+
+	lds YL, low(LCD_array)
+	lds YH, high(LCD_array)
+	lds XH, high(array_end)
+	lds XL, low(array_end)
+	ld ZL, x+
+	ld ZH, x
+	adiw y, 2
+	cp YL, ZL
+	cpc YH, ZH
+	brlo more_than_one
+	breq one_in_array
+	rjmp end_macro
+one_in_array:
+	sbiw y, 2
+	sts array_end, YL
+	sts array_end+1, YH
+	rjmp end_macro
+	 	
+more_than_one:
+	;while y < z
+	cp YL, ZL
+	cpc YH, ZH
+	breq end_macro
+	ld XL, y+
+	ld XH, y
+	sbiw y, 3
+	st y+, XL
+	st y+, XH
+	adiw y, 2
+	rjmp one_in_array
+
+end_macro:	
+	pop ZL
+	pop ZH
+	pop XL
+	pop XH
+	pop YL
+	pop YH	
 .endmacro
 
 .equ LCD_RS = 7
@@ -168,25 +261,36 @@ LCD_type_var:
 
 LCD_array:
 	.byte 80
+array_end:
+	.byte 2
 ;--------- END LCD variables --------
+
+;--------- MOTOR variables ----------
+num_overflow_int:
+	.byte 1
+num_needed:
+	.byte 1
+;--------- END MOTOR variables ------
 .cseg
 
 .org 0x0000 ; Reset interrupt
 jmp Reset
 .org 0x001E ; Timer2 overflow
 jmp timer2Int
+.org 0x0028
+jmp timer1OVF
 .org 0x002E ; Timer0 overflow
 jmp timer0Int
 
 
-Reset:
 
+Reset:
+	ldi status, 0b00000101 ; Set to entry moode, power setting 1 and clockwise rotation
 	; Initialise stack for interrupts
 	ldi r16, high(RAMEND)
 	out SPH, r16
 	ldi r16, low(RAMEND)
 	out SPL, r16
-	
 	; Initialise timer 0 with prescalar 8
 	; Interrupt on overflow
 	clr r16
@@ -203,6 +307,12 @@ Reset:
 	clr r16
 	out PORTF, r16
 	out PORTA, r16
+	
+	; Initialise the motor port
+	ser r16
+	out DDRB, r16
+	clr r16
+	out PORTB, r16
 
 	; Initialise the Push buttons
 	clr r16
@@ -223,6 +333,20 @@ Reset:
 	sts TCCR2B, r16
 	ldi r16, 1<<TOIE2 ; Interrupt on overflow
 	sts TIMSK2, r16
+
+	;Initialise timer1
+	clr r16
+	sts TCCR1A, r16
+	ldi r16, 0b00000010 ;Set a 8 prescalar
+	sts TCCR1B, r16
+	ldi r16, (1<<TOIE1) ;Interrupt on compare match and overflow
+	sts TIMSK1, r16
+	clr r16
+	sts num_overflow_int, r16
+	ldi r16, 8
+	sts num_needed, r16
+	
+
 	
 	;Initialise the keypad as 7-4 output and 3-0 input
 	ldi r16, keypadMask
@@ -243,26 +367,24 @@ Reset:
 	do_lcd_command 0b00001110 ; Cursor on, bar, no blink
 	do_lcd_data 'D'
 	
-
+	
 	sei
-
-	ldi status, 0b00000101 ; Set to entry moode, power setting 1 and clockwise rotation
+	;out PORTC, status
+	
 
 	ldi ZH, high(Turntable)
 	ldi ZL, low(Turntable)
+	;out PORTC, status
 
 	clr seconds
 	clr minutes
 
-	do_lcd_data_p 'F'
+	;do_lcd_data_a 'F'
 
 halt:
 	rjmp halt
 
 timer2Int:
-
-
-
 
 	push r25
 	lds r24, Timer2Counter
@@ -274,6 +396,8 @@ timer2Int:
 	breq continue_int
 	rjmp not_milli
 continue_int:
+	
+	
 	clear Timer2Counter
 
 	lds r24, Timer2Milli
@@ -284,7 +408,9 @@ continue_int:
 	cpi r18, 2
 	breq waiting_start
 	cpi r16, 0
-	breq push_button_continue
+	brne continue_checking_lcd
+	rjmp push_button_continue
+continue_checking_lcd:
 	cpi r16, 4
 	brne command_executed
 	lds r17, LCD_command_var
@@ -311,13 +437,22 @@ lcdE_set:
 	out PORTF, r17
 	lcd_set LCD_RW
 	cpi r18, 1
-	breq push_button_continue
+	brne skip_jump_to_push_button
+	rjmp push_button_continue
+skip_jump_to_push_button:
 	lcd_clr LCD_RS
 	rjmp push_button_continue
 command_end:
 	dec r16
 	sts LCD_timer_var, r16
-	
+
+		
+
+
+
+
+
+
 waiting_start:
 	cpi r16, 2
 	breq mili_wait2
@@ -331,6 +466,7 @@ waiting_start:
 	ser r17
 	out DDRF, r17 
 	; Move the queue forward one here
+	queue_pop
 	; If it is empty, clr the timer
 	; If it is not empty, set the timer to 4 again
 	rjmp push_button_continue
@@ -536,8 +672,9 @@ dont_stop:
 	breq letters ;Handle the letters 
 
 	cpi r19, 3
-	breq symbols ;Handle the bottom symbols
-
+	brne numbers ;Handle the bottom symbols
+	rjmp symbols
+numbers:
 	mov r16, status
 	andi r16, 0b00011100 
 	cpi r16, 0b00000100 ;Check if it is in entry mode
@@ -567,7 +704,25 @@ in_entry_mode:
 	andi status, 0b11111100
 	or status, r17 ;Set the power level in the status reg
 	;out PORTC, status ;Debug display on leds
-	rjmp ignore_number
+	clr r16
+	;sts TCNT1H, r16
+	;sts TCNT1L, r16
+	sts num_overflow_int, r16
+	cpi r17, 1
+	breq set_powerlvl_1
+	cpi r17, 2
+	breq set_powerlvl_2
+	ldi r16, 31
+	sts num_needed, r16
+	rjmp show
+set_powerlvl_1:
+	ldi r16, 8
+	sts num_needed, r16
+	rjmp show
+set_powerlvl_2:
+	ldi r16, 16
+	sts num_needed, r16
+	rjmp show
 not_power:
 	;out PORTC, r17 ;Debug display on leds
 ignore_number:	
@@ -692,6 +847,8 @@ clear_time:
 
 pause_button:
 	changeMode 'P'
+	clr r16
+	out PORTB, r16
 	rjmp show
 
 convert_end:
@@ -738,11 +895,48 @@ show:
 	;rcall sleep_5ms ;5ms of good luck
 	;ldi debounceFlag, 1	;because we have received input we now set r24 to 0
 	;andi status, 0b10111111
-	out PORTC, seconds
+	;out PORTC, status
 screen_end:
 	reti
 
 ;--------------- END Keypad ----------------;
+
+timer1OVF:
+	mov r16, status
+	andi r16, 0b00011100
+	cpi r16, 0
+	breq continue_motor_overflow
+	clr r16
+	out PORTB, r16
+	reti
+continue_motor_overflow:
+	lds r16, num_overflow_int
+	cpi r16, 0
+	brne already_started
+	ser r18
+	out PORTB, r18
+already_started:
+	inc r16
+	lds r17, num_needed
+	cpi r17, 31
+	cp r16, r17
+	brne dont_turn_off
+	clr r17
+	out PORTB, r17
+dont_turn_off:
+	cpi r16, 31
+	brne dont_turn_on_motor
+	ser r16
+	out PORTB, r16
+	clr r16
+	
+	;Turn on motor here
+dont_turn_on_motor:
+	sts num_overflow_int, r16
+	reti
+
+	
+	
 
 ;---------------lcd subroutines used for timing during lcd commands (aka shit I didn't write) ------------------
 
