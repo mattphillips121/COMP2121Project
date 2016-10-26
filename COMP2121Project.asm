@@ -295,8 +295,10 @@ end_macro:
 ;-------------------------------------------------------------------;
 
 .dseg
-Turntable:
-	.db "-/|``|/-" ; String defined in data memory that is looped through for turntable rotation
+;Turntable2:
+	;.db "-/|``|/-" ; String defined in data memory that is looped through for turntable rotation
+	;.db "1","2","3","4","4","3","2","1";test string
+;	.byte 4
 
 Timer2Counter:
 	.byte 2 ; The counter used to add up interrupts (that handle lcd and push buttons) until a sufficient number has passed
@@ -318,7 +320,7 @@ voltagesSeen1: ; The voltages seen from PB1
 LCD_timer_var: ; Stores the timer that is used to determine which section of the LCD handling to run
 	.byte 1
 LCD_array: ; Stores the queue of commands, data and type identifiers. Overestimated due to large memory space
-	.byte 80
+	.byte 5000
 array_end: ; Stores a pointer to the last location in the queue
 	.byte 2
 ;--------- END LCD variables --------
@@ -364,14 +366,14 @@ jmp timer1OVF
 .org 0x002E ; Timer0 overflow - Used for pipelined keypad
 jmp timer0Int
 
-
-
+Turntable:
+	.db "-/|``|/-" ; String defined in data memory that is looped through for turntable rotation
 
 ;-------------------------------------------------------------------;
 ;																	;
 ;																	;
 ;																	;
-;						START INITIALISATION							;
+;						START INITIALISATION						;
 ;																	;
 ;																	;
 ;																	;
@@ -418,7 +420,7 @@ Reset:
 	ser r16
 	out DDRC, r16 ; output
 	ldi r16, 0b00000011
-	;out PORTC, r16 ; Turn Set LEDS to display power level 1
+	out PORTC, r16 ; Turn Set LEDS to display power level 1
 
 
 	
@@ -496,8 +498,9 @@ Reset:
 	clr r16
 	sts turntable_seconds, r16
 	; Initialise the z pointer to the start of the turntable string in SRAM
-	ldi ZH, high(Turntable)
-	ldi ZL, low(Turntable)
+	ldi ZH, high(Turntable<<1)
+	ldi ZL, low(Turntable<<1)
+
 
 
 	; Pipeline the initial set up for entry mode lcd screen display
@@ -1010,19 +1013,19 @@ in_entry_mode:
 	sts num_needed, r16
 	ldi r16, 0b11111111
 	out PORTC, r16
-	rjmp screen_end
+	rjmp show
 set_powerlvl_1:
 	ldi r16, 8 ; 8 will result in 25% duty cycle
 	sts num_needed, r16
 	ldi r16, 0b00000011
 	out PORTC, r16
-	rjmp screen_end
+	rjmp show
 set_powerlvl_2:
 	ldi r16, 16 ; 16 will result in 50% duty cycle
 	sts num_needed, r16
 	ldi r16, 0b00001111
 	out PORTC, r16
-	rjmp screen_end
+	rjmp show
 not_power:
 	rjmp convert_continue ; If it was not in power mode, jump to converting the number normally
 ignore_number:	
@@ -1062,7 +1065,7 @@ change_powerlvl:
 	if_in_mode 'E'
 	brne no_change
 	changeMode 'X'
-	
+	rjmp show
 no_change:
 	rjmp screen_end
 
@@ -1070,8 +1073,13 @@ no_change:
 add_30:
 	cpi seconds, 30 ; If the sconds counter is less than 30, just add 30
 	brlo easyadd
+	cpi minutes, 99
+	breq no_time_update
 	subi seconds, 30 ; Otherwise, subtract 30 and add one to minutes
 	inc minutes
+	rjmp show
+no_time_update:
+	ldi seconds, 99
 	rjmp show
 ; Run if 30 wants to be added to seconds which is less than 30
 easyadd:
@@ -1129,6 +1137,18 @@ clear_time:
 	;out PORTC, status
 	clr seconds
 	clr minutes
+	if_in_mode 'P'
+	brne continue_clear_time
+
+	ldi r23, low(Turntable<<1)+4
+	sub r23, ZL
+	subi r23, -low(Turntable<<1)
+
+	mov ZL, r23
+
+	ldi r23, 0b00100000
+	eor status, r23
+continue_clear_time:
 	changeMode 'E' ; Have this in case it is in finished mode or some mode that is not entry
 	rjmp show
 
@@ -1159,15 +1179,40 @@ s_button_does_nothing:
 
 add_one_min: ; Add one minute if it is not already 99
 	cpi minutes, 99
-	brge start_running
+	brge set_seconds_ninenine
 	inc minutes
+	rjmp start_running
+set_seconds_ninenine:
+	ldi seconds, 99
 start_running:
+	if_in_mode 'E'
+	brne no_variable_update
 	clr r23
 	sts num_overflow_int, r23 ; Clear the number of motor interrupts so the motor starts a soon as start is pressed
+	ldi r23,78
+	sts turntable_seconds, r23
+no_variable_update:
 	changeMode 'R' ;Set the status to running mode
 	do_lcd_command_a 0b00000001
 	do_lcd_command_a 0xCF		; Cursor to bottom right
 	do_lcd_data_a 'C'			; Write closed. Must always be closed to run this section
+	do_lcd_command_a 0x80  		; Cursor on top line
+	bin_to_txt minutes			; Write the minutes
+	do_lcd_data_a ':'			; Write the colon
+	bin_to_txt seconds			; Write the seconds
+	sbrs status, 5 ;will play the second half of the string if we're spinning the other way
+	adiw z, 4
+
+	lpm r22, z
+		
+	do_lcd_command_a 0x8F ; Get to top right position on LCD
+
+	mov_lcd_data_a r22 ; Write out current turntable position
+	;do_lcd_data_a 0
+	
+	sbrs status,5
+	sbiw z, 4
+
 	rjmp screen_end
 
 
@@ -1215,10 +1260,36 @@ show:
 	do_lcd_command_a 0b00000001 ; clear display	
 
 	do_lcd_command_a 0x80  	; cursor on top line
+	if_in_mode 'X'
+	breq showpower_txt
+	rjmp showtime_txt
+showpower_txt:
+	do_lcd_data_a 'S'
+	do_lcd_data_a 'e'
+	do_lcd_data_a 't'
+	do_lcd_data_a ' '
+	do_lcd_data_a 'P'
+	do_lcd_data_a 'o'
+	do_lcd_data_a 'w'
+	do_lcd_data_a 'e'
+	do_lcd_data_a 'r'
+	do_lcd_data_a ' '
+	do_lcd_data_a '1'
+	do_lcd_data_a '/'
+	do_lcd_data_a '2'
+	do_lcd_data_a '/'
+	do_lcd_data_a '3'
+
+	rjmp show_bottom_line
+
+showtime_txt:
 	bin_to_txt minutes		; Write out the minutes register
 
 	do_lcd_data_a ':'		; Write out colon
 	bin_to_txt seconds		; Write out the seconds register
+	
+
+show_bottom_line:
 	if_in_mode 'E'			; If not in entry mode, print group number on bottom line
 	brne check_power_level
 	rjmp show_group
@@ -1239,6 +1310,18 @@ door_is_open_and_I_want_to_show_this:
 	do_lcd_data_a 'O'
 
 screen_end:
+		sbrs status, 5 ;will play the second half of the string if we're spinning the other way
+	adiw z, 4
+
+	lpm r22, z
+	
+	do_lcd_command_a 0x8F ; Get to top right position on LCD
+
+	mov_lcd_data_a r22 ; Write out current turntable position
+	;do_lcd_data_a 0
+	
+	sbrs status,5
+	sbiw z, 4
 	reti
 
 ;-------------------------------------------------------------------;
@@ -1288,6 +1371,47 @@ timer1OVF:
 
 ; If it is in running mode, start from this label
 continue_motor_overflow:
+	lds r22, turntable_seconds
+	cpi r22, 78 ; If there have been 78 interrupts, rotate the table
+	breq turntable_update ; Otherwise, skip to motor handling
+	rjmp no_turntable_update
+turntable_update:	
+	ldi r22, high(Turntable+2<<1) ;we check if Z has incremented 4 times
+	cpi ZL, low(Turntable+2<<1) ;if so, we must reset its position in the string
+	cpc ZH, r22
+	brne no_reset_needed
+	ldi ZL, low(Turntable<<1)
+	ldi ZH, high(Turntable<<1)
+no_reset_needed:
+	sbrs status, 5 ;will play the second half of the string if we're spinning the other way
+	adiw z, 4
+	;sbrs status,5
+	;sbiw z, 4
+	lpm r22, z
+	adiw z,1
+	
+	do_lcd_command_a 0x8C ; Get to top right position on LCD
+	bin_to_txt ZL
+	mov_lcd_data_a r22 ; Write out current turntable position
+	;do_lcd_data_a 0
+	
+	sbrs status,5
+	sbiw z, 4
+
+
+spin_clockwise:
+	;brne no_turntable_handling ; Otherwise do nothing except for increment the pointer
+	;clr r23 ; Reset the second counter to 0
+
+	; Best way will be to do it every 77 or 78 interrupts (because it needs 8 cycles every 20 seconds) 
+	; TODO - Handle the turntable rotation using th Z pointer
+
+	clr r22 ; Reset the interrupt timer for the turntable
+	;no_turntable_handling:
+	;sts turntable_seconds, r23 ; Store the new value of turntable seconds (will be 0 just after a turntable update)
+no_turntable_update:
+	inc r22
+	sts turntable_seconds, r22 
 	lds r22, num_overflow_int ; Check the number of interrupts so far
 	cpi r22, 0 ; If it is 0, start the motor and remove the group name from bottom
 	breq update_motor_state ; Otherwise, leave the motor doing what it is
@@ -1316,21 +1440,7 @@ dont_turn_off:
 	cpi r22, 30 ; Check whether it is time to turn the motor on next interrupt
 	brne dont_turn_on_motor
 	
-	
 	clr r22 ; clr r22 to be written to the number of interrupts received
-
-	lds r23, turntable_seconds ; Load the number of seconds it has been for the turntable
-	inc r23
-	cpi r23, 5 ; If it has been 5 seconds, rotate the turntable
-	brne no_turntable_handling ; Otherwise do nothing except for increment the pointer
-	clr r23 ; Reset the second counter to 0
-
-
-	; TODO - Handle the turntable rotation using th Z pointer
-
-
-	no_turntable_handling:
-	sts turntable_seconds, r23 ; Store the new value of turntable seconds (will be 0 just after a turntable update)
 	
 	cpi seconds, 1 ;If there is one second left, the time is up or need to decrement minutes
 	brne not_finished 
@@ -1387,10 +1497,33 @@ done_screen: ; Print out the necessary to the screen
 	do_lcd_data_a 'o'
 	do_lcd_data_a 'd'
 
+	sbrs status, 5 ;will play the second half of the string if we're spinning the other way
+	adiw z, 4
+
+	lpm r22, z
+	
+	do_lcd_command_a 0x8F ; Get to top right position on LCD
+
+	mov_lcd_data_a r22 ; Write out current turntable position
+	;do_lcd_data_a 0
+	
+	sbrs status,5
+	sbiw z, 4
+
 	do_lcd_command_a 0xCF	; Cursor to boottom right corner
 	do_lcd_data_a 'C'		; Door will always be closed here
+	
+
+	ldi r23, low(Turntable<<1)+4
+	sub r23, ZL
+	subi r23, -low(Turntable<<1)
+
+	mov ZL, r23
+
+	ldi r23, 0b00100000
+	eor status, r23
 	rjmp dont_turn_on_motor
-	;rjmp show_openness_update	
+		
 
 
 ;-------------------------------------------------------------------;
@@ -1410,7 +1543,7 @@ done_screen: ; Print out the necessary to the screen
 ;																	;
 ;																	;
 ;																	;
-;						START TIMER1 SEGMENT						;
+;						END TIMER1 SEGMENT							;
 ;						MOTOR & TURNTABLE							;
 ;																	;
 ;																	;
