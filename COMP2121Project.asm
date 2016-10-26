@@ -117,7 +117,8 @@
 	clr r0
 	st x+, r16
 	st x, r0
-
+	
+	sbiw y, 1
 	st y+, XL
 	st y, XH
 
@@ -142,6 +143,7 @@
 	ldi r16, 1
 	st x, r16
 
+	sbiw y, 1
 	st y+, XL
 	st y, XH
 
@@ -165,10 +167,12 @@
 	;out PORTC, YH
 	st x+, r16
 	ldi r16, 0
-	st x, r16
+	st x+, r16
 
+	sbiw y, 1
 	st y+, XL
 	st y, XH
+
 
 	pop XL
 	pop XH
@@ -189,6 +193,10 @@
 	ldi XL, low(array_end)
 	ld ZL, x+
 	ld ZH, x
+	;mov_lcd_data ZH
+	;mov_lcd_data ZL
+	out PORTC, ZH
+loop_again:
 	adiw y, 2
 	cp YL, ZL
 	cpc YH, ZH
@@ -211,8 +219,7 @@ more_than_one:
 	sbiw y, 3
 	st y+, XL
 	st y+, XH
-	adiw y, 2
-	rjmp one_in_array
+	rjmp loop_again
 
 end_macro:	
 	pop ZL
@@ -351,7 +358,7 @@ Reset:
 	do_lcd_command 0b00000001 ; clear display
 	do_lcd_command 0b00000110 ; increment, no display shift
 	do_lcd_command 0b00001110 ; Cursor on, bar, no blink
-	do_lcd_data 'A'
+	;do_lcd_data 'A'
 
 	ldi XH, high(LCD_array)
 	ldi XL, low(LCD_array)
@@ -359,13 +366,27 @@ Reset:
 	sts array_end+1, XH
 
 	do_lcd_data_a 'T'
-	;do_lcd_data_a 'H'
+	do_lcd_data_a 'H'
+	do_lcd_data_a 'T'
+		do_lcd_data_a 'H'
+	do_lcd_data_a 'T'
+		do_lcd_data_a 'H'
+	do_lcd_data_a 'T'
+		do_lcd_data_a 'H'
+	do_lcd_data_a 'T'
+	do_lcd_data_a 0xC0
+		do_lcd_data_a 'H'
+	do_lcd_data_a 'T'
+		do_lcd_data_a 'H'
+	do_lcd_data_a 'T'
+		do_lcd_data_a 'H'
+	do_lcd_data_a 'T'
 	lds r16, lcd_array+1
 	;ori r16, 0b00110000
 	;mov_lcd_data r16
 
 	out PORTC, r16
-	do_lcd_data 'p'
+	;do_lcd_data 'p'
 
 	;Initialise timer2
 	clr r16
@@ -410,8 +431,8 @@ timer2Int:
 	lds r24, Timer2Counter
 	lds r25, Timer2Counter + 1
 	adiw r25:r24,1
-	ldi r16, high(500)
-	cpi r24, low(500)
+	ldi r16, high(20)
+	cpi r24, low(20)
 	cpc r25, r16
 	breq continue_int
 	rjmp not_milli
@@ -499,10 +520,10 @@ lcdE_set:
 	brne command_end
 	inc r16
 	sts LCD_timer_var,r16
-	ldi r18, 2
+	ldi r17, 2
 	;ser r16
 	
-	sts LCD_array+1, r18
+	sts LCD_array+1, r17
     clr r17
 	out DDRF, r17
 	out PORTF, r17
@@ -525,6 +546,7 @@ command_end:
 
 
 waiting_start:
+	
 	cpi r16, 2
 	breq mili_wait2
 	cpi r16,1
@@ -536,7 +558,8 @@ waiting_start:
 	rjmp reset_timer
 	lcd_clr LCD_RW
 	ser r17
-	out DDRF, r17 
+	out DDRF, r17
+	;out PORTC, r17
 	; Move the queue forward one here
 	queue_pop
 	;out PORTC, r16
@@ -547,7 +570,7 @@ mili_wait2:
 	lcd_set LCD_E
 	rjmp timer_decrement_wait
 mili_wait1:
-	lcd_clr LCD_E
+	;lcd_clr LCD_E
 timer_decrement_wait:
 	dec r16
 	sts LCD_timer_var, r16
