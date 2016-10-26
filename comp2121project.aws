@@ -1,1 +1,1 @@
-<AVRWorkspace><IOSettings><CurrentRegisters/></IOSettings><part name="ATMEGA2560"/><Files/></AVRWorkspace>
+<AVRWorkspace><IOSettings><CurrentRegisters><EEPROM><register register="EEAR" group="EEPROM" display="1" locked="0"/></EEPROM><EEPROM><register register="EECR" group="EEPROM" display="1" locked="0"/></EEPROM><EEPROM><register register="EEDR" group="EEPROM" display="1" locked="0"/></EEPROM></CurrentRegisters></IOSettings><part name="ATMEGA2560"/><Files/></AVRWorkspace>
