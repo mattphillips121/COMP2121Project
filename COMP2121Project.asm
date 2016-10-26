@@ -109,8 +109,8 @@
 	push XL
 	mov r16, @0
 
-	lds YH, high(array_end)
-	lds YL, low(array_end)
+	ldi YH, high(array_end)
+	ldi YL, low(array_end)
 	ld XL, y+
 	ld XH, y
 	
@@ -133,8 +133,8 @@
 	push XL
 	ldi r16, @0
 
-	lds YH, high(array_end)
-	lds YL, low(array_end)
+	ldi YH, high(array_end)
+	ldi YL, low(array_end)
 	ld XL, y+
 	ld XH, y
 	
@@ -157,11 +157,12 @@
 	push XL
 	ldi r16, @0
 
-	lds YH, high(array_end)
-	lds YL, low(array_end)
+	ldi YH, high(array_end)
+	ldi YL, low(array_end)
 	ld XL, y+
 	ld XH, y
 	
+	;out PORTC, YH
 	st x+, r16
 	ldi r16, 0
 	st x, r16
@@ -182,10 +183,10 @@
 	push ZH
 	push ZL
 
-	lds YL, low(LCD_array)
-	lds YH, high(LCD_array)
-	lds XH, high(array_end)
-	lds XL, low(array_end)
+	ldi YL, low(LCD_array)
+	ldi YH, high(LCD_array)
+	ldi XH, high(array_end)
+	ldi XL, low(array_end)
 	ld ZL, x+
 	ld ZH, x
 	adiw y, 2
@@ -324,7 +325,7 @@ Reset:
 	ser r16
 	out DDRC, r16 ; output
 	ldi r16, 0b00000011
-	out PORTC, r16 ; Turn Set LEDS to display power level 1
+	;out PORTC, r16 ; Turn Set LEDS to display power level 1
 
 
 	
@@ -359,9 +360,14 @@ Reset:
 
 	do_lcd_data_a 'T'
 	;do_lcd_data_a 'H'
+	lds r16, lcd_array+1
+	;ori r16, 0b00110000
+	;mov_lcd_data r16
+
+	out PORTC, r16
 	do_lcd_data 'p'
 
-		;Initialise timer2
+	;Initialise timer2
 	clr r16
 	sts TCCR2A, r16
 	ldi r16, 0b00000010
@@ -433,11 +439,11 @@ check_queue:
 	push XL
 	push ZH
 	push ZL
-	
-	lds YL, low(LCD_array)
-	lds YH, high(LCD_array)
-	lds XH, high(array_end)
-	lds XL, low(array_end)
+	ldi YL, low(LCD_array)
+	ldi YH, high(LCD_array)
+	ldi XH, high(array_end)
+	ldi XL, low(array_end)
+
 	ld ZL, x+
 	ld ZH, x
 	cp YL, ZL
@@ -451,8 +457,11 @@ check_queue:
 	brne array_not_empty
 	rjmp push_button_continue
 array_not_empty:
+	lds r18, LCD_array+1
+	cpi r18, 2
+	breq handle_array
 	ldi r16, 4
-	out PORTC, r16
+	
 	sts LCD_timer_var, r16
 handle_array:
 	lds r18, LCD_array + 1 ;Need to load from array instead of variable (type)
@@ -467,14 +476,14 @@ continue_checking_lcd:
 	lds r17, LCD_array
 	;ldi r16, 0b01010100
 	
-	push r16
-	clr r16
-	out PORTC, r16
-	mov r16, r17
-	rcall lcd_data
-	rcall lcd_wait
+	;push r16
+	;clr r16
+	
+	;mov r16, r17
+	;rcall lcd_data
+	;rcall lcd_wait
 	out PORTF, r17
-	pop r16
+	;pop r16
 	cpi r18, 1
 	breq command_end
 	lcd_set LCD_RS
@@ -491,7 +500,9 @@ lcdE_set:
 	inc r16
 	sts LCD_timer_var,r16
 	ldi r18, 2
-	sts LCD_type_var, r18
+	;ser r16
+	
+	sts LCD_array+1, r18
     clr r17
 	out DDRF, r17
 	out PORTF, r17
@@ -520,6 +531,7 @@ waiting_start:
 	breq mili_wait1
 	in r17, PINF
 	lcd_clr LCD_E
+	;out PORTC, r17
 	sbrc r17, 7
 	rjmp reset_timer
 	lcd_clr LCD_RW
@@ -527,6 +539,7 @@ waiting_start:
 	out DDRF, r17 
 	; Move the queue forward one here
 	queue_pop
+	;out PORTC, r16
 	; If it is empty, clr the timer
 	; If it is not empty, set the timer to 4 again
 	rjmp push_button_continue
@@ -541,6 +554,7 @@ timer_decrement_wait:
 	rjmp push_button_continue
 reset_timer:		
 	ldi r16,2
+	;out PORTC, r16
 	sts LCD_timer_var, r16
 ;--------------- END LCD pipeline -----------------;
 ;--------------- START Push Buttons ---------------;
