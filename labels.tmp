@@ -32,12 +32,12 @@
   <turntable_seconds><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>340</LINE></turntable_seconds>
   <Reset><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>380</LINE></Reset>
   <timer2Int><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>546</LINE></timer2Int>
-  <timer1OVF><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1276</LINE></timer1OVF>
+  <timer1OVF><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1282</LINE></timer1OVF>
   <timer0Int><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>892</LINE></timer0Int>
-  <lcd_command><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1424</LINE></lcd_command>
-  <lcd_wait><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1444</LINE></lcd_wait>
-  <sleep_5ms><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1480</LINE></sleep_5ms>
-  <sleep_1ms><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1468</LINE></sleep_1ms>
+  <lcd_command><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1431</LINE></lcd_command>
+  <lcd_wait><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1451</LINE></lcd_wait>
+  <sleep_5ms><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1487</LINE></sleep_5ms>
+  <sleep_1ms><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1475</LINE></sleep_1ms>
   <halt><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>519</LINE></halt>
   <continue_int><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>558</LINE></continue_int>
   <not_milli><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>846</LINE></not_milli>
@@ -63,7 +63,7 @@
   <opened_when_running><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>776</LINE></opened_when_running>
   <opened_in_entry><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>780</LINE></opened_in_entry>
   <set_led><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>783</LINE></set_led>
-  <show><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1207</LINE></show>
+  <show><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1213</LINE></show>
   <door_already_closed><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>827</LINE></door_already_closed>
   <to_entry_mode><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>813</LINE></to_entry_mode>
   <turn_off_door_led><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>817</LINE></turn_off_door_led>
@@ -85,8 +85,8 @@
   <not_power><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1026</LINE></not_power>
   <set_powerlvl_1><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1014</LINE></set_powerlvl_1>
   <set_powerlvl_2><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1020</LINE></set_powerlvl_2>
-  <screen_end><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1235</LINE></screen_end>
-  <convert_continue><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1169</LINE></convert_continue>
+  <screen_end><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1241</LINE></screen_end>
+  <convert_continue><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1175</LINE></convert_continue>
   <interpret_letters><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1036</LINE></interpret_letters>
   <check_finished_mode><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1040</LINE></check_finished_mode>
   <continue_with_letter><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1046</LINE></continue_with_letter>
@@ -97,39 +97,38 @@
   <easyadd><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1077</LINE></easyadd>
   <easysub><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1092</LINE></easysub>
   <easiersub><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1096</LINE></easiersub>
-  <stopMicrowave><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1345</LINE></stopMicrowave>
+  <stopMicrowave><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1350</LINE></stopMicrowave>
   <interpret_symbols><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1105</LINE></interpret_symbols>
-  <start_button><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1112</LINE></start_button>
-  <zero><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1140</LINE></zero>
-  <stop_button><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1147</LINE></stop_button>
-  <add_one_min><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1129</LINE></add_one_min>
-  <s_button_does_nothing><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1138</LINE></s_button_does_nothing>
-  <start_running><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1133</LINE></start_running>
-  <handle_zero><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1144</LINE></handle_zero>
-  <clear_time><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1156</LINE></clear_time>
-  <pause_button><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1163</LINE></pause_button>
-  <tensPlace><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1176</LINE></tensPlace>
-  <minutesOnes><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1185</LINE></minutesOnes>
-  <continueMinutes><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1189</LINE></continueMinutes>
-  <secondsShift><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1194</LINE></secondsShift>
-  <updateSeconds><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1201</LINE></updateSeconds>
-  <check_power_level><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1219</LINE></check_power_level>
-  <show_group><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1222</LINE></show_group>
-  <no_groupe><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1227</LINE></no_groupe>
-  <door_is_open_and_I_want_to_show_this><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1232</LINE></door_is_open_and_I_want_to_show_this>
-  <continue_motor_overflow><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1284</LINE></continue_motor_overflow>
-  <update_motor_state><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1289</LINE></update_motor_state>
-  <already_started><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1300</LINE></already_started>
-  <dont_turn_off><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1309</LINE></dont_turn_off>
-  <dont_turn_on_motor><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1351</LINE></dont_turn_on_motor>
-  <no_turntable_handling><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1327</LINE></no_turntable_handling>
-  <not_finished><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1334</LINE></not_finished>
-  <changeMins><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1341</LINE></changeMins>
-  <update_screen><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1354</LINE></update_screen>
-  <done_screen><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1366</LINE></done_screen>
-  <show_openness_update><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1360</LINE></show_openness_update>
-  <lcd_data><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1433</LINE></lcd_data>
-  <lcd_wait_loop><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1450</LINE></lcd_wait_loop>
-  <delayloop_1ms><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1473</LINE></delayloop_1ms>
+  <start_button><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1140</LINE></start_button>
+  <zero><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1112</LINE></zero>
+  <stop_button><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1119</LINE></stop_button>
+  <handle_zero><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1116</LINE></handle_zero>
+  <clear_time><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1128</LINE></clear_time>
+  <pause_button><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1135</LINE></pause_button>
+  <add_one_min><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1160</LINE></add_one_min>
+  <s_button_does_nothing><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1157</LINE></s_button_does_nothing>
+  <start_running><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1164</LINE></start_running>
+  <tensPlace><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1182</LINE></tensPlace>
+  <minutesOnes><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1191</LINE></minutesOnes>
+  <continueMinutes><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1195</LINE></continueMinutes>
+  <secondsShift><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1200</LINE></secondsShift>
+  <updateSeconds><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1207</LINE></updateSeconds>
+  <check_power_level><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1225</LINE></check_power_level>
+  <show_group><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1228</LINE></show_group>
+  <no_groupe><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1233</LINE></no_groupe>
+  <door_is_open_and_I_want_to_show_this><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1238</LINE></door_is_open_and_I_want_to_show_this>
+  <continue_motor_overflow><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1290</LINE></continue_motor_overflow>
+  <update_motor_state><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1295</LINE></update_motor_state>
+  <already_started><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1305</LINE></already_started>
+  <dont_turn_off><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1314</LINE></dont_turn_off>
+  <dont_turn_on_motor><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1356</LINE></dont_turn_on_motor>
+  <no_turntable_handling><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1332</LINE></no_turntable_handling>
+  <not_finished><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1339</LINE></not_finished>
+  <changeMins><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1346</LINE></changeMins>
+  <update_screen><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1359</LINE></update_screen>
+  <done_screen><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1370</LINE></done_screen>
+  <lcd_data><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1440</LINE></lcd_data>
+  <lcd_wait_loop><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1457</LINE></lcd_wait_loop>
+  <delayloop_1ms><FILE>C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm</FILE><LINE>1480</LINE></delayloop_1ms>
  </LABELS>
 </ASSEMBLER_INFO>

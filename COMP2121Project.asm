@@ -1109,34 +1109,6 @@ interpret_symbols:
 	cpi colnum, 1 ; or if we have zero
 	breq zero
 	brne stop_button ; Otherwise, it is a hash
-start_button: ;start_button 
-; Entry Mode  - Change to running mode
-;	Run the time entered. If no time entered, run for 1 min
-; Running Mode - Add 1 min
-; Pause Mode - Resume running
-	if_in_mode 'R'
-	;Check if in running mode
-	breq add_one_min
-	if_in_mode 'F' ;Check if in finished mode and if so do nothing
-	breq s_button_does_nothing
-	;Otherwise, in entry mode and handle that
-	clr r0
-	cpi seconds, 0
-	cpc minutes, r0 ; Check whether there is any time input already.
-	breq add_one_min ; If not then add one minute and start. Otherwise, just run
-	rjmp start_running
-
-add_one_min: ; Add one minute if it is not already 99
-	cpi minutes, 99
-	brge start_running
-	inc minutes
-start_running:
-	clr r23
-	sts num_overflow_int, r23 ; Clear the number of motor interrupts so the motor starts a soon as start is pressed
-	changeMode 'R' ;Set the status to running mode
-	
-s_button_does_nothing:
-	rjmp screen_end
 zero:
 	if_in_mode 'E' ; Only handle a 0 press if in entry mode
 	breq handle_zero
@@ -1165,6 +1137,40 @@ pause_button:
 	clr r16
 	out PORTB, r16 ; Stop the motor spinning
 	rjmp show
+start_button: ;start_button 
+; Entry Mode  - Change to running mode
+;	Run the time entered. If no time entered, run for 1 min
+; Running Mode - Add 1 min
+; Pause Mode - Resume running
+	if_in_mode 'R'
+	;Check if in running mode
+	breq add_one_min
+	if_in_mode 'F' ;Check if in finished mode and if so do nothing
+	breq s_button_does_nothing
+	;Otherwise, in entry mode and handle that
+	clr r0
+	cpi seconds, 0
+	cpc minutes, r0 ; Check whether there is any time input already.
+	breq add_one_min ; If not then add one minute and start. Otherwise, just run
+	rjmp start_running
+
+s_button_does_nothing:
+	rjmp screen_end
+
+add_one_min: ; Add one minute if it is not already 99
+	cpi minutes, 99
+	brge start_running
+	inc minutes
+start_running:
+	clr r23
+	sts num_overflow_int, r23 ; Clear the number of motor interrupts so the motor starts a soon as start is pressed
+	changeMode 'R' ;Set the status to running mode
+	do_lcd_command_a 0b00000001
+	do_lcd_command_a 0xCF		; Cursor to bottom right
+	do_lcd_data_a 'C'			; Write closed. Must always be closed to run this section
+	rjmp screen_end
+
+
 
 convert_continue:
 	;out PORTC, r17
@@ -1289,13 +1295,12 @@ continue_motor_overflow:
 update_motor_state:
 	ser r23
 	out PORTB, r23
-	do_lcd_command_a 0b00000001 ; Clear the screen
+	;do_lcd_command_a 0b00000001 ; Clear the screen
 	do_lcd_command_a 0x80  		; Cursor on top line
 	bin_to_txt minutes			; Write the minutes
 	do_lcd_data_a ':'			; Write the colon
 	bin_to_txt seconds			; Write the seconds
-	do_lcd_command_a 0xCF		; Cursor to bottom right
-	do_lcd_data_a 'C'			; Write closed. Must always be closed to run this section
+	
 	
 already_started:
 	inc r22	; Increment the number of interrupt count
@@ -1353,14 +1358,13 @@ dont_turn_on_motor:
 	reti
 update_screen:
 	; Do not need to clear the screen because it is cleared at the start of running mode
-	do_lcd_command_a 0x80  	; Cursor on top line
-	bin_to_txt minutes		; Write out the minutes
-	do_lcd_data_a ':'		; Write out the colon
-	bin_to_txt seconds		; Write out the seconds
-show_openness_update:
-	do_lcd_command_a 0xCF	; Cursor to boottom right corner
-	do_lcd_data_a 'C'		; Door will always be closed here
+	;do_lcd_command_a 0x80  	; Cursor on top line
+	;bin_to_txt minutes		; Write out the minutes
+	;do_lcd_data_a ':'		; Write out the colon
+	;bin_to_txt seconds		; Write out the seconds
+	;do_lcd_data_a 'G'
 	rjmp dont_turn_on_motor
+
 
 
 done_screen: ; Print out the necessary to the screen
@@ -1383,7 +1387,10 @@ done_screen: ; Print out the necessary to the screen
 	do_lcd_data_a 'o'
 	do_lcd_data_a 'd'
 
-	rjmp show_openness_update	
+	do_lcd_command_a 0xCF	; Cursor to boottom right corner
+	do_lcd_data_a 'C'		; Door will always be closed here
+	rjmp dont_turn_on_motor
+	;rjmp show_openness_update	
 
 
 ;-------------------------------------------------------------------;
