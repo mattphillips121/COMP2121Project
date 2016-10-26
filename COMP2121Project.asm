@@ -1008,15 +1008,21 @@ in_entry_mode:
 	breq set_powerlvl_2
 	ldi r16, 31 ; 31 will result in a 100% duty cycle
 	sts num_needed, r16
-	rjmp show
+	ldi r16, 0b11111111
+	out PORTC, r16
+	rjmp screen_end
 set_powerlvl_1:
 	ldi r16, 8 ; 8 will result in 25% duty cycle
 	sts num_needed, r16
-	rjmp show
+	ldi r16, 0b00000011
+	out PORTC, r16
+	rjmp screen_end
 set_powerlvl_2:
 	ldi r16, 16 ; 16 will result in 50% duty cycle
 	sts num_needed, r16
-	rjmp show
+	ldi r16, 0b00001111
+	out PORTC, r16
+	rjmp screen_end
 not_power:
 	rjmp convert_continue ; If it was not in power mode, jump to converting the number normally
 ignore_number:	
@@ -1058,7 +1064,7 @@ change_powerlvl:
 	changeMode 'X'
 	
 no_change:
-	rjmp show
+	rjmp screen_end
 
 ; Adds 30 seconds
 add_30:
@@ -1161,7 +1167,7 @@ pause_button:
 	rjmp show
 
 convert_continue:
-	out PORTC, r17
+	;out PORTC, r17
 	ldi r23, 10 ; Used for the mul command
 		cpi seconds, 1 ; If there is already a single second digit, check 10s of seconds
 		brge tensPlace
