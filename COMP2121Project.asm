@@ -1208,7 +1208,12 @@ show:
 	do_lcd_data_a ':'		; Write out colon
 	bin_to_txt seconds		; Write out the seconds register
 	if_in_mode 'E'			; If not in entry mode, print group number on bottom line
+	brne check_power_level
+	rjmp show_group
+check_power_level: 
+	if_in_mode 'X'			; Power entry mode counts as entry mode
 	brne no_groupe
+show_group:
 	do_lcd_command_a 0xC0
 	do_lcd_data_a 'A'
 	do_lcd_data_a '1'

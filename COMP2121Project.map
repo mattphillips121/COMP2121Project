@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Wed Oct 26 14:36:25 2016
+AVRASM ver. 2.1.42  C:\Users\Matthew\Documents\GitHub\COMP2121Project\COMP2121Project.asm Wed Oct 26 14:41:24 2016
 
 
 EQU  SIGNATURE_000 0000001e
@@ -1381,12 +1381,12 @@ DSEG num_needed   00000261
 DSEG turntable_seconds 00000262
 CSEG Reset        00000030
 CSEG timer2Int    000001ac
-CSEG timer1OVF    000004c9
+CSEG timer1OVF    000004d0
 CSEG timer0Int    000002a0
-CSEG lcd_command  000007d4
-CSEG lcd_wait     000007e4
-CSEG sleep_5ms    000007fe
-CSEG sleep_1ms    000007f5
+CSEG lcd_command  000007db
+CSEG lcd_wait     000007eb
+CSEG sleep_5ms    00000805
+CSEG sleep_1ms    000007fc
 CSEG tens@bin_to_txt@2441 000000d3
 CSEG tensnext@bin_to_txt@2441 000000d8
 CSEG ones@bin_to_txt@2441 000000ed
@@ -1445,7 +1445,7 @@ CSEG not_power    00000304
 CSEG set_powerlvl_1 000002fc
 CSEG set_powerlvl_2 00000300
 CSEG convert_continue 0000038c
-CSEG screen_end   000004c8
+CSEG screen_end   000004cf
 CSEG interpret_letters 0000030e
 CSEG check_finished_mode 00000315
 CSEG continue_with_letter 0000031c
@@ -1456,7 +1456,7 @@ CSEG sub_30       0000033a
 CSEG easyadd      00000338
 CSEG easysub      00000341
 CSEG easiersub    00000343
-CSEG stopMicrowave 000005bf
+CSEG stopMicrowave 000005c6
 CSEG interpret_symbols 0000034d
 CSEG start_button 00000353
 CSEG zero         0000036d
@@ -1478,33 +1478,35 @@ CSEG ones@bin_to_txt@4022 000003eb
 CSEG tens@bin_to_txt@4125 00000419
 CSEG tensnext@bin_to_txt@4125 0000041e
 CSEG ones@bin_to_txt@4125 00000433
-CSEG no_groupe    00000489
-CSEG door_is_open_and_I_want_to_show_this 000004b5
-CSEG continue_motor_overflow 000004d2
-CSEG update_motor_state 000004d7
-CSEG already_started 000005a2
-CSEG tens@bin_to_txt@4537 00000503
-CSEG tensnext@bin_to_txt@4537 00000508
-CSEG ones@bin_to_txt@4537 0000051d
-CSEG tens@bin_to_txt@4639 0000054b
-CSEG tensnext@bin_to_txt@4639 00000550
-CSEG ones@bin_to_txt@4639 00000565
-CSEG dont_turn_off 000005a9
-CSEG dont_turn_on_motor 000005c3
-CSEG no_turntable_handling 000005b2
-CSEG not_finished 000005b8
-CSEG changeMins   000005bc
-CSEG update_screen 000005c6
-CSEG done_screen  0000067d
-CSEG tens@bin_to_txt@4866 000005dd
-CSEG tensnext@bin_to_txt@4866 000005e2
-CSEG ones@bin_to_txt@4866 000005f7
-CSEG tens@bin_to_txt@4968 00000625
-CSEG tensnext@bin_to_txt@4968 0000062a
-CSEG ones@bin_to_txt@4968 0000063f
-CSEG show_openness_update 00000656
-CSEG lcd_data     000007db
-CSEG lcd_wait_loop 000007e9
+CSEG check_power_level 00000451
+CSEG show_group   00000457
+CSEG no_groupe    00000490
+CSEG door_is_open_and_I_want_to_show_this 000004bc
+CSEG continue_motor_overflow 000004d9
+CSEG update_motor_state 000004de
+CSEG already_started 000005a9
+CSEG tens@bin_to_txt@4562 0000050a
+CSEG tensnext@bin_to_txt@4562 0000050f
+CSEG ones@bin_to_txt@4562 00000524
+CSEG tens@bin_to_txt@4664 00000552
+CSEG tensnext@bin_to_txt@4664 00000557
+CSEG ones@bin_to_txt@4664 0000056c
+CSEG dont_turn_off 000005b0
+CSEG dont_turn_on_motor 000005ca
+CSEG no_turntable_handling 000005b9
+CSEG not_finished 000005bf
+CSEG changeMins   000005c3
+CSEG update_screen 000005cd
+CSEG done_screen  00000684
+CSEG tens@bin_to_txt@4891 000005e4
+CSEG tensnext@bin_to_txt@4891 000005e9
+CSEG ones@bin_to_txt@4891 000005fe
+CSEG tens@bin_to_txt@4993 0000062c
+CSEG tensnext@bin_to_txt@4993 00000631
+CSEG ones@bin_to_txt@4993 00000646
+CSEG show_openness_update 0000065d
+CSEG lcd_data     000007e2
+CSEG lcd_wait_loop 000007f0
 EQU  F_CPU        00f42400
 EQU  DELAY_1MS    00000f9c
-CSEG delayloop_1ms 000007f9
+CSEG delayloop_1ms 00000800
