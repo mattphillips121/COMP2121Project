@@ -1,1 +1,1 @@
-"c:\Program Files\Arduino\hardware\tools\avr\bin\avrdude.exe" -C "c:\Program Files\Arduino\hardware\tools\avr\etc\avrdude.conf" -c wiring -p m2560 -P %1 -b 115200 -U flash:w:%2:i -D
+"C:\Users\Thomas\Documents\avr projs\lab4\bin\avrdude.exe" -C "C:\Users\Thomas\Documents\avr projs\lab4\bin\avrdude.conf" -v -v -v -v -c stk500v2 -p m2560 -P %1 -b 115200 -U flash:w:%2:i -D

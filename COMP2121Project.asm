@@ -335,9 +335,13 @@ num_needed:
 	.byte 1 ; Stores the number of overflows that are needed before turning off the motor
 ;--------- END MOTOR variables ------
 
-
-
-
+;--------- BEEPING variables --------
+beepnum:
+	.byte 1
+beep_overflow:
+	.byte 1
+untouched:
+	.byte 1
 ;--------- Spinner variables --------
 turntable_seconds:
 	.byte 1
@@ -365,6 +369,8 @@ jmp timer2Int
 jmp timer1OVF
 .org 0x002E ; Timer0 overflow - Used for pipelined keypad
 jmp timer0Int
+.org 0x0046 ; Timer3 overflow - Used for backlight and key press beep 
+jmp timer3Int
 
 Turntable:
 	.db "-/|``|/-" ; String defined in data memory that is looped through for turntable rotation
@@ -421,8 +427,12 @@ Reset:
 	out DDRC, r16 ; output
 	ldi r16, 0b00000011
 	out PORTC, r16 ; Turn Set LEDS to display power level 1
-
-
+	
+	;Would be changed for the speaker
+	ser r16
+	out DDRG, r16
+	clr r16
+	out PORTG, r16
 	
 
 	
@@ -477,6 +487,18 @@ Reset:
 	sts TCCR1B, r16
 	ldi r16, (1<<TOIE1) ;Interrupt on overflow
 	sts TIMSK1, r16
+	
+	; Initialise timer3 (beep and backlight)
+	clr r16
+	sts TCCR3A, r16
+	ldi r16, 0b00000011 ; 64 prescalar
+	sts TCCR3B, r16
+	ldi r16, 1<<TOIE3 ; Interrupt on overflow
+	sts TIMSK3, r16
+	clr r16
+	sts beep_overflow, r16
+	sts untouched, r16
+	
 
 	; Initialise the number of overflows to 0 and the num needed before turning off to 8
 	; 8 represents the power level. 
@@ -486,6 +508,7 @@ Reset:
 	;			level 3 (100% duty cycle) turns off after 31
 	clr r16
 	sts num_overflow_int, r16
+	sts beepnum, r16
 	ldi r16, 8
 	sts num_needed, r16
 	
@@ -958,6 +981,10 @@ nextcol:
 	
 
 convert:
+	ser r17
+	sts untouched, r17
+	clr r17
+	sts beep_overflow, r17
 	; Check the debounce flag in status
 	mov r17, status
 	andi r17, 0b01000000
@@ -1367,8 +1394,32 @@ timer1OVF:
 	breq continue_motor_overflow
 	clr r22 ; If not in running mode, make sure motor is off
 	out PORTB, r22
+
+	if_in_mode 'F'
+	breq handle_beep
 	reti
 
+handle_beep:
+	lds r22, num_overflow_int
+	cpi r22, 30
+	breq check_beep
+	inc r22
+	sts num_overflow_int, r22
+	reti
+check_beep:
+	clr r22
+	sts num_overflow_int, r22
+	lds r22, beepnum
+	cpi r22, 6
+	breq no_beep
+	inc r22
+	sts beepnum, r22
+	clr r23
+	sbrc r22, 0
+	ser r23
+	out PORTG, r23
+no_beep:
+	reti
 ; If it is in running mode, start from this label
 continue_motor_overflow:
 	lds r22, turntable_seconds
@@ -1390,8 +1441,8 @@ no_reset_needed:
 	lpm r22, z
 	adiw z,1
 	
-	do_lcd_command_a 0x8C ; Get to top right position on LCD
-	bin_to_txt ZL
+	do_lcd_command_a 0x8F ; Get to top right position on LCD
+	;bin_to_txt ZL
 	mov_lcd_data_a r22 ; Write out current turntable position
 	;do_lcd_data_a 0
 	
@@ -1440,6 +1491,7 @@ dont_turn_off:
 	cpi r22, 30 ; Check whether it is time to turn the motor on next interrupt
 	brne dont_turn_on_motor
 	
+
 	clr r22 ; clr r22 to be written to the number of interrupts received
 	
 	cpi seconds, 1 ;If there is one second left, the time is up or need to decrement minutes
@@ -1458,6 +1510,12 @@ changeMins:
 	ldi seconds, 59 ; Go from a whole minute to 59 seconds
 	rjmp update_screen
 stopMicrowave:
+	clr r23
+	sts num_overflow_int, r23
+	inc r23
+	sts beepnum, r23
+	ser r23
+	out PORTG, r23
 	dec seconds ; Will set seconds to o0
 	changemode 'F' ; Set the microwave to finished mode
 	rjmp done_screen ; Display the finished screen	
@@ -1500,11 +1558,11 @@ done_screen: ; Print out the necessary to the screen
 	sbrs status, 5 ;will play the second half of the string if we're spinning the other way
 	adiw z, 4
 
-	lpm r22, z
+	lpm r23, z
 	
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
 
-	mov_lcd_data_a r22 ; Write out current turntable position
+	mov_lcd_data_a r23 ; Write out current turntable position
 	;do_lcd_data_a 0
 	
 	sbrs status,5
@@ -1550,6 +1608,25 @@ done_screen: ; Print out the necessary to the screen
 ;																	;
 ;-------------------------------------------------------------------;
 
+
+timer3Int:
+	lds r16, untouched
+	sbrs r16, 0
+	reti
+	ser r16
+	out PORTG, r16
+	lds r16, beep_overflow
+	cpi r16, 2
+	breq turn_off
+	inc r16
+	sts beep_overflow, r16
+	reti
+turn_off:
+	clr r17
+	out PORTG, r17
+	sts untouched, r17
+	sts beep_overflow, r17
+	reti
 
 
 ;---------------lcd subroutines used for timing during lcd commands (aka shit I didn't write) ------------------
