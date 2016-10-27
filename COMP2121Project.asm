@@ -458,7 +458,7 @@ Reset:
 	do_lcd_command 0b00001000 ; display off?
 	do_lcd_command 0b00000001 ; clear display
 	do_lcd_command 0b00000110 ; increment, no display shift
-	do_lcd_command 0b00001110 ; Cursor on, bar, no blink
+	do_lcd_command 0b00000110 ; Cursor on, bar, no blink
 	;do_lcd_data 'A'
 
 	; Initialise all of the queue variables to empty queue
@@ -1249,6 +1249,8 @@ convert_continue:
 	ldi r23, 10 ; Used for the mul command
 		cpi seconds, 1 ; If there is already a single second digit, check 10s of seconds
 		brge tensPlace
+		cpi minutes, 1
+		brge minutesOnes
 		add seconds, r17 ; Otherwise, just add the pressed digit to seconds
 		rjmp show
 	tensPlace:
