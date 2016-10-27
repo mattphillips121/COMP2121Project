@@ -244,8 +244,8 @@ loop_again:
 	breq one_in_array ; If they are equal, then there is only one element in the queue
 	rjmp end_macro ; Otherwise, the queue is empty so the macro is finished
 one_in_array:
-	sbiw y, 2 ; Bring the y value back to the start of the queue
-	sts array_end, YL ; Store this y value (start of the queue) as the end of the queue
+	sbiw y, 2 ; Bring the y value back to the new end of queue
+	sts array_end, YL ; Update the array_end pointer to point to the end of the updated array
 	sts array_end+1, YH ; Little endian order
 	rjmp end_macro ; End the macro
 	 	
@@ -1443,7 +1443,7 @@ no_reset_needed:
 	
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
 	;bin_to_txt ZL
-	mov_lcd_data_a r22 ; Write out current turntable position
+	mov_lcd_data_a r22 ; Write out current turntable position 
 	;do_lcd_data_a 0
 	
 	sbrs status,5
