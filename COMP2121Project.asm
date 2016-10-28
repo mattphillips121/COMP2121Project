@@ -295,11 +295,6 @@ end_macro:
 ;-------------------------------------------------------------------;
 
 .dseg
-;Turntable2:
-	;.db "-/|``|/-" ; String defined in data memory that is looped through for turntable rotation
-	;.db "1","2","3","4","4","3","2","1";test string
-;	.byte 4
-
 Timer2Counter:
 	.byte 2 ; The counter used to add up interrupts (that handle lcd and push buttons) until a sufficient number has passed
 
@@ -372,9 +367,10 @@ jmp timer0Int
 .org 0x0046 ; Timer3 overflow - Used for backlight and key press beep 
 jmp timer3Int
 
-;.org 00F
+
 Turntable:
-	.db "-/|``|/-" ; String defined in data memory that is looped through for turntable rotation
+	.db "-/|``|/--" ; String defined in data memory that is looped through for turntable rotation
+					; Extra hyphen is a hack because of weird overflowing that fixes next time we iterate
 
 ;-------------------------------------------------------------------;
 ;																	;
@@ -401,7 +397,7 @@ Reset:
 	ldi r16, 0b00000010
 	out TCCR0B, r16
 	ldi r16, 1<<TOIE0 	
-	sts TIMSK0, r16 ; Interrupt on overflow
+	sts TIMSK0, r16 
 	
 	; Initialise the LCD Ports and top LED port to output
 	ser r16
@@ -459,8 +455,7 @@ Reset:
 	do_lcd_command 0b00001000 ; display off?
 	do_lcd_command 0b00000001 ; clear display
 	do_lcd_command 0b00000110 ; increment, no display shift
-	do_lcd_command 0b00001100 ; Cursor on, bar, no blink
-	;do_lcd_data 'A'
+	do_lcd_command 0b00001100 ; Cursor off, bar, no blink
 
 	; Initialise all of the queue variables to empty queue
 	ldi XH, high(LCD_array) ; Load the address of the start of the queue into x
@@ -515,7 +510,6 @@ Reset:
 	
 	
 	sei
-	;out PORTC, status
 	
 	; Initialise the number of seconds for the turntable to 0
 	; When it is 5, it will update the displayed image (5 means 1 cycle per 20s = 3 cycles per min)
@@ -555,11 +549,7 @@ Reset:
 
 halt:
 	rjmp halt				; Empty loop. Now the initialisation phase is finished and the code is purely timer interrupts
-other:
-	nop
-	nop
-	nop
-	nop
+
 ;-------------------------------------------------------------------;
 ;																	;
 ;																	;
@@ -662,9 +652,7 @@ handle_array:
 	lds r18, LCD_array + 1 ; Need to reload the type variable in case the timer is not 0 
 	cpi r18, 2
 	breq waiting_start ; Break to the waiting loop if it is of type 2
-	;cpi r16, 0 ; Check whether the timer is 0 (should never be 0?) I think we can delete these 3 lines
-	;brne continue_checking_lcd
-	;rjmp push_button_continue
+
 continue_checking_lcd:
 	cpi r16, 4 ; Check the timer to determine which stage to jump to
 	brne command_executed ; If the timer is not 4, then the first step has been completed and the command put out on the LCD port F
@@ -880,7 +868,7 @@ neither_button:
 	ori r16, 1
 	sts voltagesSeen1, r16
 	
-do_nothing:
+do_nothing: ;do nothing
 	pop r25
 	reti
 
@@ -1043,10 +1031,7 @@ in_entry_mode:
 	brge ignore_number
 	andi status, 0b11111100
 	or status, r17 ;Set the power level in the status reg
-	;out PORTC, status ;Debug display on leds
-	;clr r16
-	
-	;sts num_overflow_int, r16 ; If a number has been pressed,
+
 	cpi r17, 1 ; Check what the button pressed was and set the power level appropriately
 	breq set_powerlvl_1
 	cpi r17, 2
@@ -1176,7 +1161,6 @@ stop_button:
 	breq pause_button
 
 clear_time:
-	;out PORTC, status
 	clr seconds
 	clr minutes
 	if_in_mode 'P'
@@ -1249,7 +1233,7 @@ no_variable_update:
 		
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
 	mov_lcd_data_a r22 ; Write out current turntable position
-	;do_lcd_data_a 0
+
 	
 	sbrs status,5
 	sbiw z, 4
@@ -1259,7 +1243,6 @@ no_variable_update:
 
 
 convert_continue:
-	;out PORTC, r17
 	ldi r23, 10 ; Used for the mul command
 		cpi seconds, 1 ; If there is already a single second digit, check 10s of seconds
 		brge tensPlace
@@ -1360,7 +1343,7 @@ screen_end:
 	
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
 	mov_lcd_data_a r22 ; Write out current turntable position
-	;do_lcd_data_a 0
+
 	
 	sbrs status,5
 	sbiw z, 4
@@ -1453,31 +1436,25 @@ turntable_update:
 no_reset_needed:
 	sbrs status, 5 ;will play the second half of the string if we're spinning the other way
 	adiw z, 4
-	;sbrs status,5
-	;sbiw z, 4
 	lpm r22, z
-	;adiw z,1
+
 	
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
 
 
 	mov_lcd_data_a r22 ; Write out current turntable position 
-	;do_lcd_data_a 0
+
 	
 	sbrs status,5
 	sbiw z, 4
 
 
 spin_clockwise:
-	;brne no_turntable_handling ; Otherwise do nothing except for increment the pointer
-	;clr r23 ; Reset the second counter to 0
 
 	; Best way will be to do it every 77 or 78 interrupts (because it needs 8 cycles every 20 seconds) 
-	; TODO - Handle the turntable rotation using th Z pointer
 
 	clr r22 ; Reset the interrupt timer for the turntable
-	;no_turntable_handling:
-	;sts turntable_seconds, r23 ; Store the new value of turntable seconds (will be 0 just after a turntable update)
+
 no_turntable_update:
 	inc r22
 	sts turntable_seconds, r22 
@@ -1488,7 +1465,7 @@ no_turntable_update:
 update_motor_state:
 	ser r23
 	out PORTB, r23
-	;do_lcd_command_a 0b00000001 ; Clear the screen
+
 	do_lcd_command_a 0x80  		; Cursor on top line
 	bin_to_txt minutes			; Write the minutes
 	do_lcd_data_a ':'			; Write the colon
@@ -1543,12 +1520,6 @@ dont_turn_on_motor:
 	sts num_overflow_int, r22 ; Store the number of interrupts passed here
 	reti
 update_screen:
-	; Do not need to clear the screen because it is cleared at the start of running mode
-	;do_lcd_command_a 0x80  	; Cursor on top line
-	;bin_to_txt minutes		; Write out the minutes
-	;do_lcd_data_a ':'		; Write out the colon
-	;bin_to_txt seconds		; Write out the seconds
-	;do_lcd_data_a 'G'
 	rjmp dont_turn_on_motor
 
 
@@ -1626,15 +1597,15 @@ done_screen: ; Print out the necessary to the screen
 ;-------------------------------------------------------------------;
 
 
-timer3Int:
-	lds r16, untouched
+timer3Int:;makes led beep on key touch for ~250ms
+	lds r16, untouched ;has keey been touched?
 	sbrs r16, 0
-	reti
-	ser r16
+	reti;if not, then do nothing
+	ser r16 ;otherwise turn it on
 	out PORTG, r16
-	lds r16, beep_overflow
+	lds r16, beep_overflow ;has it been on for 250ms?
 	cpi r16, 2
-	breq turn_off
+	breq turn_off ;if so then turn it off and get rid of untouched flag
 	inc r16
 	sts beep_overflow, r16
 	reti
@@ -1646,7 +1617,7 @@ turn_off:
 	reti
 
 
-;---------------lcd subroutines used for timing during lcd commands (aka shit I didn't write) ------------------
+;---------------lcd subroutines used for timing during lcd commands (aka shit we didn't write) ------------------
 
 
 
