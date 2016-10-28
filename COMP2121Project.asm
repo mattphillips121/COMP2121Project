@@ -372,6 +372,7 @@ jmp timer0Int
 .org 0x0046 ; Timer3 overflow - Used for backlight and key press beep 
 jmp timer3Int
 
+;.org 00F
 Turntable:
 	.db "-/|``|/-" ; String defined in data memory that is looped through for turntable rotation
 
@@ -458,7 +459,7 @@ Reset:
 	do_lcd_command 0b00001000 ; display off?
 	do_lcd_command 0b00000001 ; clear display
 	do_lcd_command 0b00000110 ; increment, no display shift
-	do_lcd_command 0b00000110 ; Cursor on, bar, no blink
+	do_lcd_command 0b00001100 ; Cursor on, bar, no blink
 	;do_lcd_data 'A'
 
 	; Initialise all of the queue variables to empty queue
@@ -540,11 +541,25 @@ Reset:
 
 	do_lcd_command_a 0xCF 	; Bottom right corner
 	do_lcd_data_a 'C'		; Door is closed initially
+	sbrs status, 5 ;will play the second half of the string if we're spinning the other way
+	adiw z, 4
+
+	lpm r22, z
+	
+	do_lcd_command_a 0x8F ; Get to top right position on LCD
+	mov_lcd_data_a r22 ; Write out current turntable position
+	
+	sbrs status,5
+	sbiw z, 4
 
 
 halt:
 	rjmp halt				; Empty loop. Now the initialisation phase is finished and the code is purely timer interrupts
-
+other:
+	nop
+	nop
+	nop
+	nop
 ;-------------------------------------------------------------------;
 ;																	;
 ;																	;
@@ -1233,7 +1248,6 @@ no_variable_update:
 	lpm r22, z
 		
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
-
 	mov_lcd_data_a r22 ; Write out current turntable position
 	;do_lcd_data_a 0
 	
@@ -1345,7 +1359,6 @@ screen_end:
 	lpm r22, z
 	
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
-
 	mov_lcd_data_a r22 ; Write out current turntable position
 	;do_lcd_data_a 0
 	
@@ -1429,10 +1442,12 @@ continue_motor_overflow:
 	breq turntable_update ; Otherwise, skip to motor handling
 	rjmp no_turntable_update
 turntable_update:	
+	adiw z,1
+
 	ldi r22, high(Turntable+2<<1) ;we check if Z has incremented 4 times
-	cpi ZL, low(Turntable+2<<1) ;if so, we must reset its position in the string
+	cpi ZL, low(Turntable+2<<1);if so, we must reset its position in the string
 	cpc ZH, r22
-	brne no_reset_needed
+	brlo no_reset_needed
 	ldi ZL, low(Turntable<<1)
 	ldi ZH, high(Turntable<<1)
 no_reset_needed:
@@ -1441,10 +1456,11 @@ no_reset_needed:
 	;sbrs status,5
 	;sbiw z, 4
 	lpm r22, z
-	adiw z,1
+	;adiw z,1
 	
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
-	;bin_to_txt ZL
+
+
 	mov_lcd_data_a r22 ; Write out current turntable position 
 	;do_lcd_data_a 0
 	
@@ -1563,9 +1579,8 @@ done_screen: ; Print out the necessary to the screen
 	lpm r23, z
 	
 	do_lcd_command_a 0x8F ; Get to top right position on LCD
-
 	mov_lcd_data_a r23 ; Write out current turntable position
-	;do_lcd_data_a 0
+	
 	
 	sbrs status,5
 	sbiw z, 4
